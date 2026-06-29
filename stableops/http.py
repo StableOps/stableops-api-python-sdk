@@ -248,7 +248,7 @@ class HttpClient:
                         status=status,
                         code=error_data.get("code", "api_error"),
                         details=error_data.get("details"),
-                    )
+                    ) from e
 
                 # Retry on 429 and 5xx
                 if attempt < self.max_retries and is_retryable_status(status):
@@ -264,7 +264,7 @@ class HttpClient:
                     status=status,
                     code=error_data.get("code", "api_error"),
                     details=error_data.get("details"),
-                )
+                ) from e
 
             except (httpx.TimeoutException, httpx.NetworkError) as e:
                 if self._debug:
@@ -291,7 +291,7 @@ class HttpClient:
                     status=0,
                     code=error_type,
                     details=None,
-                )
+                ) from e
 
         # Should never reach here
         raise StableOpsError(
@@ -450,7 +450,7 @@ class AsyncHttpClient:
                         status=status,
                         code=error_data.get("code", "api_error"),
                         details=error_data.get("details"),
-                    )
+                    ) from e
 
                 if attempt < self.max_retries and is_retryable_status(status):
                     retry_after = self._parse_retry_after(e.response)
@@ -464,7 +464,7 @@ class AsyncHttpClient:
                     status=status,
                     code=error_data.get("code", "api_error"),
                     details=error_data.get("details"),
-                )
+                ) from e
 
             except (httpx.TimeoutException, httpx.NetworkError) as e:
                 if self._debug:
@@ -489,7 +489,7 @@ class AsyncHttpClient:
                     status=0,
                     code=error_type,
                     details=None,
-                )
+                ) from e
 
         raise StableOpsError(
             message="Max retries exceeded",
