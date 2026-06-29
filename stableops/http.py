@@ -304,7 +304,7 @@ class HttpClient:
     def _parse_error(self, response: httpx.Response) -> Dict[str, Any]:
         """Parse error response."""
         try:
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
         except Exception:
             return {"message": response.text or "Unknown error", "code": "unknown_error"}
 
@@ -501,7 +501,7 @@ class AsyncHttpClient:
     def _parse_error(self, response: httpx.Response) -> Dict[str, Any]:
         """Parse error response."""
         try:
-            return response.json()
+            return response.json()  # type: ignore[no-any-return]
         except Exception:
             return {"message": response.text or "Unknown error", "code": "unknown_error"}
 

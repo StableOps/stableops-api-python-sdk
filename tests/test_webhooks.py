@@ -2,6 +2,7 @@
 
 import hashlib
 import hmac
+from typing import Any
 
 from stableops.webhooks import (
     SIGNATURE_HEADER,
@@ -24,11 +25,11 @@ def build_header(secret: str, timestamp: int, body: str) -> str:
     return f"t={timestamp},v1={signature}"
 
 
-def test_signature_header_constant_matches_delivery_protocol():
+def test_signature_header_constant_matches_delivery_protocol() -> None:
     assert SIGNATURE_HEADER == "x-product-signature"
 
 
-def test_valid_signature_header():
+def test_valid_signature_header() -> None:
     secret = "whsec_test123"
     body = '{"type":"payment.finalized","data":{"payment_order_id":"po_123"}}'
 
@@ -43,7 +44,7 @@ def test_valid_signature_header():
     assert result.reason == "valid"
 
 
-def test_accepts_any_v1_signature_during_rotation():
+def test_accepts_any_v1_signature_during_rotation() -> None:
     old_secret = "whsec_old"
     new_secret = "whsec_new"
     body = '{"type":"payment.finalized"}'
@@ -63,7 +64,7 @@ def test_accepts_any_v1_signature_during_rotation():
     assert result.reason == "valid"
 
 
-def test_invalid_signature():
+def test_invalid_signature() -> None:
     result = verify_webhook_signature(
         body='{"type":"payment.finalized"}',
         header=f"t={NOW},v1=invalid_signature",
@@ -75,7 +76,7 @@ def test_invalid_signature():
     assert result.reason == "invalid_signature"
 
 
-def test_missing_header():
+def test_missing_header() -> None:
     result = verify_webhook_signature(
         body='{"type":"payment.finalized"}',
         header="",
@@ -87,7 +88,7 @@ def test_missing_header():
     assert result.reason == "missing_header"
 
 
-def test_timestamp_too_old():
+def test_timestamp_too_old() -> None:
     result = verify_webhook_signature(
         body='{"type":"payment.finalized"}',
         header=f"t={NOW},v1=sig123",
@@ -100,7 +101,7 @@ def test_timestamp_too_old():
     assert result.reason == "timestamp_expired"
 
 
-def test_invalid_header_format():
+def test_invalid_header_format() -> None:
     result = verify_webhook_signature(
         body='{"type":"payment.finalized"}',
         header="t=not_a_number,v1=sig123",
@@ -112,30 +113,30 @@ def test_invalid_header_format():
     assert result.reason == "invalid_format"
 
 
-def test_webhooks_api_matches_server_routes():
+def test_webhooks_api_matches_server_routes() -> None:
     assert not hasattr(WebhooksApi, "retrieve")
     assert not hasattr(WebhooksApi, "delete")
     assert not hasattr(AsyncWebhooksApi, "retrieve")
     assert not hasattr(AsyncWebhooksApi, "delete")
 
 
-def test_webhooks_api_exposes_delivery_and_replay_methods():
+def test_webhooks_api_exposes_delivery_and_replay_methods() -> None:
     for name in ("replay", "list_deliveries", "replay_delivery", "replay_dead_letters"):
         assert hasattr(WebhooksApi, name)
         assert hasattr(AsyncWebhooksApi, name)
 
 
 class _FakeHttp:
-    def __init__(self, response):
+    def __init__(self, response: Any) -> None:
         self.response = response
-        self.last_request = {}
+        self.last_request: dict[str, Any] = {}
 
-    def request(self, **kwargs):
+    def request(self, **kwargs: Any) -> Any:
         self.last_request = kwargs
         return self.response
 
 
-def test_create_endpoint_forwards_redact_metadata():
+def test_create_endpoint_forwards_redact_metadata() -> None:
     http = _FakeHttp(
         {
             "id": "we_1",
@@ -159,7 +160,7 @@ def test_create_endpoint_forwards_redact_metadata():
     assert endpoint.redact_metadata is True
 
 
-def test_list_deliveries_filters_and_parses():
+def test_list_deliveries_filters_and_parses() -> None:
     http = _FakeHttp(
         {
             "items": [
@@ -198,7 +199,7 @@ def test_list_deliveries_filters_and_parses():
     assert deliveries[0].payload == {"type": "payment.finalized"}
 
 
-def test_replay_dead_letters_parses_result():
+def test_replay_dead_letters_parses_result() -> None:
     http = _FakeHttp(
         {
             "replayed": 2,

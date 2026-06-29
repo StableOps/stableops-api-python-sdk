@@ -1,6 +1,6 @@
 """StableOps client."""
 
-from typing import Optional
+from typing import Any, Optional
 
 from stableops.addresses import AddressesApi, AsyncAddressesApi
 from stableops.checkout_sessions import AsyncCheckoutSessionsApi, CheckoutSessionsApi
@@ -68,7 +68,7 @@ class StableOps:
         """Context manager entry."""
         return self
 
-    def __exit__(self, *args) -> None:
+    def __exit__(self, *args: Any) -> None:
         """Context manager exit."""
         self.close()
 
@@ -132,6 +132,6 @@ class AsyncStableOps:
         """Async context manager entry."""
         return self
 
-    async def __aexit__(self, *args) -> None:
+    async def __aexit__(self, *args: Any) -> None:
         """Async context manager exit."""
         await self.close()

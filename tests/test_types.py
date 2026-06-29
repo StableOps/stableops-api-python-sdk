@@ -2,10 +2,16 @@
 
 from typing import get_args
 
-from stableops.types import ChainId, PaymentOrder, PaymentOrderStatus
+from stableops.types import (
+    AcceptedAssetInput,
+    ChainId,
+    PaymentOrder,
+    PaymentOrderInstruction,
+    PaymentOrderStatus,
+)
 
 
-def test_type_aliases_match_current_api_contract():
+def test_type_aliases_match_current_api_contract() -> None:
     """Public Literal aliases should expose the same enum values as the API."""
     assert "solana" in get_args(ChainId)
     assert "optimism" in get_args(ChainId)
@@ -15,7 +21,7 @@ def test_type_aliases_match_current_api_contract():
     assert "CREATED" not in get_args(PaymentOrderStatus)
 
 
-def test_payment_order_accepts_current_api_wire_values():
+def test_payment_order_accepts_current_api_wire_values() -> None:
     """Python SDK types should match values returned by the API."""
     order = PaymentOrder(
         id="po_123",
@@ -26,13 +32,9 @@ def test_payment_order_accepts_current_api_wire_values():
         expires_at=None,
         metadata=None,
         created_at="2026-05-31T00:00:00.000Z",
-        accepted_assets=[{"chain": "solana", "asset": "USDC"}],
+        accepted_assets=[AcceptedAssetInput(chain="solana", asset="USDC")],
         payment_instructions=[
-            {
-                "chain": "solana",
-                "asset": "USDC",
-                "address": "RecipientWallet123",
-            }
+            PaymentOrderInstruction(chain="solana", asset="USDC", address="RecipientWallet123")
         ],
     )
 
