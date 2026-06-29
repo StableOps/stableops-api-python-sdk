@@ -17,11 +17,11 @@ order = client.payment_orders.create(
     merchant_order_id=f"order_{int(time.time())}",
     amount="10.00",
     accepted_assets=[
-        {"chain": "base", "asset": "USDC"},
-        {"chain": "ethereum", "asset": "USDC"},
+        {"chain": "base-sepolia", "asset": "USDC"},
+        {"chain": "ethereum-sepolia", "asset": "USDC"},
     ],
     # 必传:≤30min(sandbox)/≤24h(live)。
-    expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
+    expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).strftime("%Y-%m-%dT%H:%M:%SZ"),
     metadata={
         "user_id": "user_123",
         "product_id": "prod_456",

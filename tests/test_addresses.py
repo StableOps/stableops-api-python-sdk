@@ -13,7 +13,7 @@ class FakeHttp:
         self.last_request = kwargs
         return {
             "id": "addr_1",
-            "chain": "base",
+            "chain": "base-sepolia",
             "address": "0xabc",
             "label": kwargs["body"].get("label"),
             "mode": "single",

@@ -18,8 +18,8 @@ async def main():
         order = await client.payment_orders.create(
             merchant_order_id="async_order_123",
             amount="25.00",
-            accepted_assets=[{"chain": "base", "asset": "USDC"}],
-            expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
+            accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
+            expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).strftime("%Y-%m-%dT%H:%M:%SZ"),
         )
 
         print(f"✓ Order created: {order.id}")

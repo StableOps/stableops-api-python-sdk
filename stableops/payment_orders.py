@@ -10,6 +10,19 @@ from stableops.types import (
 )
 
 
+def _normalize_iso_datetime(dt: str) -> str:
+    """Convert ISO datetime to Zod 4-compatible format (requires 'Z' suffix for UTC).
+
+    Python's datetime.isoformat() produces '+00:00' for UTC, but Zod 4's
+    iso.datetime() only accepts the 'Z' suffix and rejects '+00:00'.
+    """
+    if dt.endswith('+00:00'):
+        return dt[:-6] + 'Z'
+    if dt.endswith('+00:00.000'):
+        return dt[:-9] + 'Z'
+    return dt
+
+
 def _to_create_body(
     merchant_order_id: str,
     amount: str,
@@ -23,7 +36,7 @@ def _to_create_body(
         "merchant_order_id": merchant_order_id,
         "amount": amount,
         "accepted_assets": accepted_assets,
-        "expires_at": expires_at,
+        "expires_at": _normalize_iso_datetime(expires_at),
     }
     if amount_mode is not None:
         body["amount_mode"] = amount_mode
@@ -97,7 +110,7 @@ class PaymentOrdersApi:
             >>> order = client.payment_orders.create(
             ...     merchant_order_id="order_123",
             ...     amount="10.00",
-            ...     accepted_assets=[{"chain": "base", "asset": "USDC"}],
+            ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
             ...     expires_at="2026-06-20T12:30:00Z",
             ... )
         """

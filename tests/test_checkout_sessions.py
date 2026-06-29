@@ -27,8 +27,8 @@ def _wire_session(**overrides: Any) -> Dict[str, Any]:
             "expires_at": None,
             "metadata": None,
             "created_at": "2026-06-01T00:00:00.000Z",
-            "accepted_assets": [{"chain": "base", "asset": "USDC"}],
-            "payment_instructions": [{"chain": "base", "asset": "USDC", "address": "0xabc"}],
+            "accepted_assets": [{"chain": "base-sepolia", "asset": "USDC"}],
+            "payment_instructions": [{"chain": "base-sepolia", "asset": "USDC", "address": "0xabc"}],
         },
     }
     wire.update(overrides)
@@ -52,7 +52,7 @@ def test_create_builds_hosted_url_from_client_secret() -> None:
     session = api.create(
         merchant_order_id="m_1",
         amount="10.00",
-        accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         expires_at="2026-06-20T12:30:00Z",
         title="Pro plan",
         walletconnect_project_id="wc_proj_1",
@@ -73,7 +73,7 @@ def test_create_default_base_url() -> None:
     session = api.create(
         merchant_order_id="m_1",
         amount="10.00",
-        accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         expires_at="2026-06-20T12:30:00Z",
     )
 
@@ -88,7 +88,7 @@ def test_url_is_none_without_client_secret() -> None:
     session = api.create(
         merchant_order_id="m_1",
         amount="10.00",
-        accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         expires_at="2026-06-20T12:30:00Z",
     )
 

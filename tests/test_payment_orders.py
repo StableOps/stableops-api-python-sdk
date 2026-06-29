@@ -16,8 +16,8 @@ def _wire_order(**overrides: Any) -> Dict[str, Any]:
         "expires_at": None,
         "metadata": None,
         "created_at": "2026-06-01T00:00:00.000Z",
-        "accepted_assets": [{"chain": "base", "asset": "USDC"}],
-        "payment_instructions": [{"chain": "base", "asset": "USDC", "address": "0xabc"}],
+        "accepted_assets": [{"chain": "base-sepolia", "asset": "USDC"}],
+        "payment_instructions": [{"chain": "base-sepolia", "asset": "USDC", "address": "0xabc"}],
     }
     wire.update(overrides)
     return wire
@@ -40,7 +40,7 @@ def test_create_does_not_send_settlement_asset_and_forwards_amount_mode() -> Non
     order = api.create(
         merchant_order_id="m_1",
         amount="10.00",
-        accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         expires_at="2026-06-20T12:30:00Z",
         amount_mode="auto",
     )
@@ -61,7 +61,7 @@ def test_amount_mode_omitted_when_not_provided() -> None:
     api.create(
         merchant_order_id="m_1",
         amount="10.00",
-        accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         expires_at="2026-06-20T12:30:00Z",
     )
 
@@ -78,7 +78,7 @@ def test_from_wire_tolerates_missing_settlement_asset() -> None:
     order = api.create(
         merchant_order_id="m_1",
         amount="10.00",
-        accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         expires_at="2026-06-20T12:30:00Z",
     )
 

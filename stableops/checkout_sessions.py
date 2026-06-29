@@ -102,7 +102,7 @@ class CheckoutSessionsApi:
             >>> session = client.checkout_sessions.create(
             ...     merchant_order_id="order_123",
             ...     amount="10.00",
-            ...     accepted_assets=[{"chain": "base", "asset": "USDC"}],
+            ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
             ...     expires_at="2026-06-20T12:30:00Z",
             ...     title="Pro plan",
             ...     success_url="https://shop.example/success",

@@ -55,7 +55,7 @@ class AddressesApi:
 
         Example:
             >>> result = client.addresses.import_addresses(
-            ...     chain="base",
+            ...     chain="base-sepolia",
             ...     addresses=["0x1234..."],
             ...     mode="single",
             ... )
@@ -92,7 +92,7 @@ class AddressesApi:
             Response with items and has_more
 
         Example:
-            >>> result = client.addresses.list(chain="base", limit=20)
+            >>> result = client.addresses.list(chain="base-sepolia", limit=20)
         """
         query: Dict[str, Any] = {}
         if chain:

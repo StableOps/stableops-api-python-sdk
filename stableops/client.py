@@ -21,7 +21,7 @@ class StableOps:
         ...     merchant_order_id="order_123",
         ...     amount="10.00",
         ...     settlement_asset="USDC",
-        ...     accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         ...     expires_at="2026-06-20T12:30:00Z",
         ... )
     """
@@ -85,7 +85,7 @@ class AsyncStableOps:
         ...         merchant_order_id="order_123",
         ...         amount="10.00",
         ...         settlement_asset="USDC",
-        ...         accepted_assets=[{"chain": "base", "asset": "USDC"}],
+        ...         accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         ...         expires_at="2026-06-20T12:30:00Z",
         ...     )
         ...     print(f"Order created: {order.id}")

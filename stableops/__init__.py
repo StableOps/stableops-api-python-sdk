@@ -8,7 +8,7 @@ Example:
     >>> order = client.payment_orders.create(
     ...     merchant_order_id="order_123",
     ...     amount="10.00",
-    ...     accepted_assets=[{"chain": "base", "asset": "USDC"}],
+    ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
     ...     expires_at="2026-06-20T12:30:00Z",
     ... )
 """

@@ -32,12 +32,12 @@ def test_payment_order_accepts_current_api_wire_values() -> None:
         expires_at=None,
         metadata=None,
         created_at="2026-05-31T00:00:00.000Z",
-        accepted_assets=[AcceptedAssetInput(chain="solana", asset="USDC")],
+        accepted_assets=[AcceptedAssetInput(chain="solana-devnet", asset="USDC")],
         payment_instructions=[
-            PaymentOrderInstruction(chain="solana", asset="USDC", address="RecipientWallet123")
+            PaymentOrderInstruction(chain="solana-devnet", asset="USDC", address="RecipientWallet123")
         ],
     )
 
     assert order.status == "created"
     assert len(order.payment_instructions) == 1
-    assert order.payment_instructions[0].chain == "solana"
+    assert order.payment_instructions[0].chain == "solana-devnet"
