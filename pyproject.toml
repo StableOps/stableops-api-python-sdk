@@ -39,6 +39,7 @@ dev = [
     "pytest-cov>=4.0.0",
     "mypy>=1.0.0",
     "ruff>=0.1.0",
+    "pylint>=3.0.0",
     "respx>=0.20.0",
 ]
 

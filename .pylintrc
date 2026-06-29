@@ -1,0 +1,65 @@
+[MASTER]
+ignore=.venv,venv,env,__pycache__,build,dist
+persistent=no
+jobs=0
+
+[MESSAGES CONTROL]
+disable=
+    C,
+    R,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-locals,
+    too-many-branches,
+    too-many-statements,
+    too-many-return-statements,
+    too-many-instance-attributes,
+    too-many-public-methods,
+    too-many-nested-blocks,
+    too-many-ancestors,
+    too-many-lines,
+    duplicate-code,
+    missing-module-docstring,
+    missing-class-docstring,
+    missing-function-docstring,
+    import-error,
+    no-name-in-module,
+    broad-exception-caught,
+    broad-except,
+    fixme,
+    wrong-import-position,
+    redefined-outer-name,
+    unspecified-encoding,
+    unused-argument,
+    raise-missing-from,
+
+[REFORMAT]
+max-line-length=100
+single-line-if-stmt=no
+single-line-class-stmt=no
+
+[BASIC]
+good-names=i,j,k,x,y,z,ex,_,pk
+bad-names=foo,bar,baz,toto,tata,tutu
+module-rgx=^[a-z][a-z0-9_]*$
+class-rgx=^_?[A-Z][a-zA-Z0-9]*$
+function-rgx=^_?[a-z][a-z0-9_]*$
+method-rgx=^_?[a-z][a-z0-9_]*$
+attr-rgx=^_?[a-z][a-z0-9_]*$
+argument-rgx=^[a-z][a-z0-9_]*$
+variable-rgx=^_?[a-z][a-z0-9_]*$
+class-attribute-naming-style=snake_case
+inlinevar-rgx=^[a-z][a-z0-9_]*$
+
+[DESIGN]
+max-args=10
+max-locals=25
+max-returns=6
+max-branches=20
+max-statements=100
+max-parents=7
+max-attributes=10
+min-public-methods=1
+
+[EXCEPTIONS]
+overgeneral-exceptions=Exception
