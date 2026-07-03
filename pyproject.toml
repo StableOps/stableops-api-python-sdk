@@ -45,7 +45,7 @@ dev = [
 
 [project.urls]
 Homepage = "https://stableops.dev"
-Documentation = "https://docs.stableops.dev"
+Documentation = "https://stableops.dev/docs"
 Repository = "https://github.com/StableOps/stableops-api-python-sdk"
 "Bug Tracker" = "https://github.com/StableOps/stableops-api-python-sdk/issues"
 
