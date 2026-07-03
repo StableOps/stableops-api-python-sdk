@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "stableops"
-version = "0.7.2"
+version = "0.10.4"
 description = "Official Python SDK for StableOps - Stablecoin payment infrastructure"
 readme = "README.md"
 requires-python = ">=3.8"
@@ -46,8 +46,8 @@ dev = [
 [project.urls]
 Homepage = "https://stableops.dev"
 Documentation = "https://docs.stableops.dev"
-Repository = "https://github.com/stableops/stableops"
-"Bug Tracker" = "https://github.com/stableops/stableops/issues"
+Repository = "https://github.com/StableOps/stableops-api-python-sdk"
+"Bug Tracker" = "https://github.com/StableOps/stableops-api-python-sdk/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["stableops"]
