@@ -10,11 +10,13 @@ confirmation tracking. StableOps watches supported chains, matches transfers,
 tracks confirmations, checks reorgs, and delivers webhook events to your app.
 
 This SDK is for server-side Python applications that create payment orders and
-checkout sessions, manage webhook endpoints, and verify webhook signatures.
+checkout sessions, manage merchant subscriptions, manage webhook endpoints, and
+verify webhook signatures.
 
 ## Features
 
-- Type-safe client (Pydantic v2 models) for payment orders, checkout sessions, and webhooks.
+- Type-safe client (Pydantic v2 models) for payment orders, checkout sessions,
+  merchant subscriptions, and webhooks.
 - Sync (`StableOps`) and async (`AsyncStableOps`) clients with an identical API.
 - Built-in request retries and explicit idempotency for write operations.
 - Constant-time webhook signature verification.

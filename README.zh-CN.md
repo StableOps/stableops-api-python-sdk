@@ -8,12 +8,12 @@ StableOps 把链上稳定币转账封装成熟悉的支付原语：支付订单�
 Webhook、自动重试与确认数跟踪。StableOps 负责扫描支持的链、匹配转账、跟踪确认数、
 校验 reorg，并把 Webhook 事件投递到你的应用。
 
-本 SDK 面向服务端 Python 应用：创建支付订单与 Checkout Session、管理 Webhook 端点、
-校验 Webhook 签名。
+本 SDK 面向服务端 Python 应用：创建支付订单与 Checkout Session、管理商户订阅、
+管理 Webhook 端点、校验 Webhook 签名。
 
 ## 特性
 
-- 类型安全客户端（Pydantic v2 模型），覆盖支付订单、Checkout Session、Webhook。
+- 类型安全客户端（Pydantic v2 模型），覆盖支付订单、Checkout Session、商户订阅、Webhook。
 - 同步（`StableOps`）与异步（`AsyncStableOps`）客户端，API 一致。
 - 内置请求重试，写操作显式幂等。
 - 常数时间的 Webhook 签名校验。

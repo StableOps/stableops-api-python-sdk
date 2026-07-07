@@ -34,6 +34,12 @@ WebhookEventType = Literal[
     "agent.action.executed",
 ]
 WebhookDeliveryStatus = Literal["pending", "succeeded", "failed", "dead_letter"]
+MerchantPlanInterval = Literal["month", "year", "week", "custom_days"]
+EndUserSubscriptionStatus = Literal[
+    "incomplete", "trialing", "active", "past_due", "canceled", "expired"
+]
+EndUserInvoiceStatus = Literal["open", "paid", "void", "uncollectible"]
+EndUserInvoiceKind = Literal["first", "renewal", "upgrade_proration"]
 
 
 class AcceptedAssetInput(BaseModel):
@@ -223,3 +229,193 @@ class ReplayDeadLettersResult(BaseModel):
 
     replayed: int
     items: List[ReplayDeadLetterItem] = Field(default_factory=list)
+
+
+class MerchantPlan(BaseModel):
+    """Merchant subscription plan."""
+
+    id: str
+    code: str
+    name: str
+    description: Optional[str]
+    group_key: str
+    amount: str
+    interval: MerchantPlanInterval
+    interval_count: int
+    trial_days: Optional[int]
+    metadata: Optional[Dict[str, Any]]
+    is_active: bool
+    is_template: bool
+    created_at: str
+    updated_at: str
+
+
+class CreateMerchantPlanInput(BaseModel):
+    """Input for creating a merchant plan."""
+
+    code: str
+    name: str
+    description: Optional[str] = None
+    group_key: str
+    amount: str
+    interval: MerchantPlanInterval
+    interval_count: int
+    trial_days: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
+    is_template: Optional[bool] = None
+
+
+class UpdateMerchantPlanInput(BaseModel):
+    """Input for updating a merchant plan."""
+
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    group_key: Optional[str] = None
+    amount: Optional[str] = None
+    interval: Optional[MerchantPlanInterval] = None
+    interval_count: Optional[int] = None
+    trial_days: Optional[int] = None
+    metadata: Optional[Dict[str, Any]] = None
+    is_template: Optional[bool] = None
+
+
+class EndUserSubscription(BaseModel):
+    """Merchant-managed end-user subscription."""
+
+    id: str
+    merchant_user_id: str
+    plan_id: str
+    status: EndUserSubscriptionStatus
+    current_period_start: str
+    current_period_end: str
+    cancel_at_period_end: bool
+    pending_plan_id: Optional[str]
+    pending_plan_change_at: Optional[str]
+    trial_ends_at: Optional[str]
+    canceled_at: Optional[str]
+    created_at: str
+    updated_at: str
+
+
+class EndUserInvoice(BaseModel):
+    """Invoice generated for an end-user subscription."""
+
+    id: str
+    subscription_id: str
+    merchant_user_id: str
+    kind: EndUserInvoiceKind
+    period_start: str
+    period_end: str
+    amount: str
+    asset: Optional[Asset]
+    status: EndUserInvoiceStatus
+    payment_order_id: Optional[str]
+    target_plan_id: Optional[str]
+    due_at: str
+    paid_at: Optional[str]
+    created_at: str
+    updated_at: str
+
+
+class MerchantSubscriptionCreateResult(BaseModel):
+    """Result of creating an end-user subscription."""
+
+    subscription: EndUserSubscription
+    invoice: Optional[EndUserInvoice]
+
+
+class MerchantSubscriptionChangePlanResult(MerchantSubscriptionCreateResult):
+    """Result of changing an end-user subscription plan."""
+
+    pending: bool
+
+
+class CreateEndUserSubscriptionInput(BaseModel):
+    """Input for creating an end-user subscription."""
+
+    plan_id: str
+    merchant_user_id: str
+    trial_days: Optional[int] = None
+
+
+class ChangeEndUserSubscriptionPlanInput(BaseModel):
+    """Input for changing an end-user subscription plan."""
+
+    plan_id: str
+
+
+class CancelEndUserSubscriptionInput(BaseModel):
+    """Input for canceling an end-user subscription."""
+
+    immediate: Optional[bool] = None
+
+
+class MerchantBillingSettings(BaseModel):
+    """Merchant subscription billing settings."""
+
+    pay_window_days: int
+    renewal_lead_days: int
+    grace_days: int
+    accepted_chains: List[ChainId]
+    payment_amount_mode: AmountMode
+
+
+class UpdateMerchantBillingSettingsInput(BaseModel):
+    """Input for updating merchant subscription billing settings."""
+
+    pay_window_days: Optional[int] = None
+    renewal_lead_days: Optional[int] = None
+    grace_days: Optional[int] = None
+    accepted_chains: Optional[List[ChainId]] = None
+    payment_amount_mode: Optional[AmountMode] = None
+
+
+class CreatePortalSessionInput(BaseModel):
+    """Input for creating an end-user portal session."""
+
+    merchant_user_id: str
+    expires_at: Optional[str] = None
+
+
+class PortalSession(BaseModel):
+    """End-user portal session."""
+
+    id: str
+    portal_token: str
+    expires_at: str
+
+
+class PayMerchantInvoiceResponse(BaseModel):
+    """Result of starting payment for an invoice."""
+
+    invoice_id: str
+    payment_order_id: str
+    status: EndUserInvoiceStatus
+    payment_order: PaymentOrder
+
+
+class MerchantInvoicePaymentStatus(BaseModel):
+    """Payment status for a merchant invoice."""
+
+    invoice_id: str
+    status: EndUserInvoiceStatus
+    payment_order: Optional[PaymentOrder]
+
+
+class CreateInvoiceCheckoutSessionInput(BaseModel):
+    """Input for creating a checkout session for an invoice."""
+
+    title: Optional[str] = None
+    success_url: Optional[str] = None
+    cancel_url: Optional[str] = None
+    walletconnect_project_id: Optional[str] = None
+
+
+class MerchantInvoiceCheckoutSession(BaseModel):
+    """Checkout session created for a merchant invoice."""
+
+    checkout_session_id: str
+    client_secret: str
+    checkout_url: str
+    payment_order: PaymentOrder

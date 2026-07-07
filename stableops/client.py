@@ -5,6 +5,12 @@ from typing import Any, Optional
 from stableops.addresses import AddressesApi, AsyncAddressesApi
 from stableops.checkout_sessions import AsyncCheckoutSessionsApi, CheckoutSessionsApi
 from stableops.http import AsyncHttpClient, DebugOption, HttpClient
+from stableops.merchant_subscriptions import (
+    AsyncMerchantPortalApi,
+    AsyncMerchantSubscriptionsApi,
+    MerchantPortalApi,
+    MerchantSubscriptionsApi,
+)
 from stableops.payment_orders import AsyncPaymentOrdersApi, PaymentOrdersApi
 from stableops.webhooks import AsyncWebhooksApi, WebhooksApi
 
@@ -54,11 +60,30 @@ class StableOps:
             max_retries=max_retries,
             debug=debug,
         )
+        self._base_url = base_url
+        self._timeout = timeout
+        self._max_retries = max_retries
+        self._debug = debug
+        self._checkout_base_url = checkout_base_url
 
         self.addresses = AddressesApi(self._http)
+        self.merchant_subscriptions = MerchantSubscriptionsApi(self._http)
         self.payment_orders = PaymentOrdersApi(self._http)
         self.checkout_sessions = CheckoutSessionsApi(self._http, checkout_base_url)
         self.webhooks = WebhooksApi(self._http)
+
+    def portal(self, portal_token: str) -> MerchantPortalApi:
+        """Create an end-user portal client using a portal session token."""
+        return MerchantPortalApi(
+            HttpClient(
+                api_key=portal_token,
+                base_url=self._base_url,
+                timeout=self._timeout,
+                max_retries=self._max_retries,
+                debug=self._debug,
+            ),
+            checkout_base_url=self._checkout_base_url,
+        )
 
     def close(self) -> None:
         """Close HTTP client."""
@@ -118,11 +143,30 @@ class AsyncStableOps:
             max_retries=max_retries,
             debug=debug,
         )
+        self._base_url = base_url
+        self._timeout = timeout
+        self._max_retries = max_retries
+        self._debug = debug
+        self._checkout_base_url = checkout_base_url
 
         self.addresses = AsyncAddressesApi(self._http)
+        self.merchant_subscriptions = AsyncMerchantSubscriptionsApi(self._http)
         self.payment_orders = AsyncPaymentOrdersApi(self._http)
         self.checkout_sessions = AsyncCheckoutSessionsApi(self._http, checkout_base_url)
         self.webhooks = AsyncWebhooksApi(self._http)
+
+    def portal(self, portal_token: str) -> AsyncMerchantPortalApi:
+        """Create an async end-user portal client using a portal session token."""
+        return AsyncMerchantPortalApi(
+            AsyncHttpClient(
+                api_key=portal_token,
+                base_url=self._base_url,
+                timeout=self._timeout,
+                max_retries=self._max_retries,
+                debug=self._debug,
+            ),
+            checkout_base_url=self._checkout_base_url,
+        )
 
     async def close(self) -> None:
         """Close HTTP client."""

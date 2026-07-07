@@ -25,7 +25,7 @@ DEFAULT_MAX_RETRIES = 2
 DEFAULT_BASE_DELAY = 0.2
 DEFAULT_MAX_DELAY = 5.0
 
-HttpMethod = Literal["GET", "POST", "PATCH", "DELETE"]
+HttpMethod = Literal["GET", "POST", "PUT", "PATCH", "DELETE"]
 
 # debug 钩子签名：接收一个 dict 事件（init / request / response / error）。
 # 传 True 走 logging.getLogger("stableops") .debug；也可传任意可调用对象自行处理。
