@@ -357,7 +357,6 @@ class MerchantBillingSettings(BaseModel):
     pay_window_days: int
     renewal_lead_days: int
     grace_days: int
-    payment_amount_mode: AmountMode
 
 
 class UpdateMerchantBillingSettingsInput(BaseModel):
@@ -366,7 +365,6 @@ class UpdateMerchantBillingSettingsInput(BaseModel):
     pay_window_days: Optional[int] = None
     renewal_lead_days: Optional[int] = None
     grace_days: Optional[int] = None
-    payment_amount_mode: Optional[AmountMode] = None
 
 
 class CreatePortalSessionInput(BaseModel):
@@ -405,6 +403,7 @@ class CreateInvoiceCheckoutSessionInput(BaseModel):
     """Input for creating a checkout session for an invoice."""
 
     accepted_assets: List[AcceptedAssetInput]
+    amount_mode: Optional[AmountMode] = None
     title: Optional[str] = None
     success_url: Optional[str] = None
     cancel_url: Optional[str] = None

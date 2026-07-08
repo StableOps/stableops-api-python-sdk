@@ -8,7 +8,6 @@ from stableops.http import AsyncHttpClient, HttpClient
 from stableops.payment_orders import _from_wire as _order_from_wire
 from stableops.types import (
     AmountMode,
-    ChainId,
     EndUserInvoice,
     EndUserInvoiceStatus,
     EndUserSubscription,
@@ -338,11 +337,12 @@ class MerchantInvoicesResource:
         invoice_id: str,
         accepted_assets: List[Dict[str, Any]],
         idempotency_key: Optional[str] = None,
+        amount_mode: Optional[AmountMode] = None,
     ) -> PayMerchantInvoiceResponse:
         response = self.http.request(
             method="POST",
             path=f"/v1/merchant/invoices/{_path(invoice_id)}/pay",
-            body={"accepted_assets": accepted_assets},
+            body=_compact({"amount_mode": amount_mode, "accepted_assets": accepted_assets}),
             idempotency_key=idempotency_key,
         )
         return _pay_invoice_from_wire(response)
@@ -370,7 +370,6 @@ class MerchantSettingsResource:
         pay_window_days: Optional[int] = None,
         renewal_lead_days: Optional[int] = None,
         grace_days: Optional[int] = None,
-        payment_amount_mode: Optional[AmountMode] = None,
         idempotency_key: Optional[str] = None,
     ) -> MerchantBillingSettings:
         response = self.http.request(
@@ -381,7 +380,6 @@ class MerchantSettingsResource:
                     "pay_window_days": pay_window_days,
                     "renewal_lead_days": renewal_lead_days,
                     "grace_days": grace_days,
-                    "payment_amount_mode": payment_amount_mode,
                 }
             ),
             idempotency_key=idempotency_key,
@@ -515,11 +513,12 @@ class MerchantPortalInvoicesResource:
         invoice_id: str,
         accepted_assets: List[Dict[str, Any]],
         idempotency_key: Optional[str] = None,
+        amount_mode: Optional[AmountMode] = None,
     ) -> PayMerchantInvoiceResponse:
         response = self.http.request(
             method="POST",
             path=f"/v1/merchant/portal/invoices/{_path(invoice_id)}/pay",
-            body={"accepted_assets": accepted_assets},
+            body=_compact({"amount_mode": amount_mode, "accepted_assets": accepted_assets}),
             idempotency_key=idempotency_key,
         )
         return _pay_invoice_from_wire(response)
@@ -533,6 +532,7 @@ class MerchantPortalInvoicesResource:
         cancel_url: Optional[str] = None,
         walletconnect_project_id: Optional[str] = None,
         idempotency_key: Optional[str] = None,
+        amount_mode: Optional[AmountMode] = None,
     ) -> MerchantInvoiceCheckoutSession:
         response = self.http.request(
             method="POST",
@@ -543,6 +543,7 @@ class MerchantPortalInvoicesResource:
                     "success_url": success_url,
                     "cancel_url": cancel_url,
                     "walletconnect_project_id": walletconnect_project_id,
+                    "amount_mode": amount_mode,
                     "accepted_assets": accepted_assets,
                 }
             ),
@@ -797,11 +798,12 @@ class AsyncMerchantInvoicesResource:
         invoice_id: str,
         accepted_assets: List[Dict[str, Any]],
         idempotency_key: Optional[str] = None,
+        amount_mode: Optional[AmountMode] = None,
     ) -> PayMerchantInvoiceResponse:
         response = await self.http.request(
             method="POST",
             path=f"/v1/merchant/invoices/{_path(invoice_id)}/pay",
-            body={"accepted_assets": accepted_assets},
+            body=_compact({"amount_mode": amount_mode, "accepted_assets": accepted_assets}),
             idempotency_key=idempotency_key,
         )
         return _pay_invoice_from_wire(response)
@@ -829,7 +831,6 @@ class AsyncMerchantSettingsResource:
         pay_window_days: Optional[int] = None,
         renewal_lead_days: Optional[int] = None,
         grace_days: Optional[int] = None,
-        payment_amount_mode: Optional[AmountMode] = None,
         idempotency_key: Optional[str] = None,
     ) -> MerchantBillingSettings:
         response = await self.http.request(
@@ -840,7 +841,6 @@ class AsyncMerchantSettingsResource:
                     "pay_window_days": pay_window_days,
                     "renewal_lead_days": renewal_lead_days,
                     "grace_days": grace_days,
-                    "payment_amount_mode": payment_amount_mode,
                 }
             ),
             idempotency_key=idempotency_key,
@@ -974,11 +974,12 @@ class AsyncMerchantPortalInvoicesResource:
         invoice_id: str,
         accepted_assets: List[Dict[str, Any]],
         idempotency_key: Optional[str] = None,
+        amount_mode: Optional[AmountMode] = None,
     ) -> PayMerchantInvoiceResponse:
         response = await self.http.request(
             method="POST",
             path=f"/v1/merchant/portal/invoices/{_path(invoice_id)}/pay",
-            body={"accepted_assets": accepted_assets},
+            body=_compact({"amount_mode": amount_mode, "accepted_assets": accepted_assets}),
             idempotency_key=idempotency_key,
         )
         return _pay_invoice_from_wire(response)
@@ -992,6 +993,7 @@ class AsyncMerchantPortalInvoicesResource:
         cancel_url: Optional[str] = None,
         walletconnect_project_id: Optional[str] = None,
         idempotency_key: Optional[str] = None,
+        amount_mode: Optional[AmountMode] = None,
     ) -> MerchantInvoiceCheckoutSession:
         response = await self.http.request(
             method="POST",
@@ -1002,6 +1004,7 @@ class AsyncMerchantPortalInvoicesResource:
                     "success_url": success_url,
                     "cancel_url": cancel_url,
                     "walletconnect_project_id": walletconnect_project_id,
+                    "amount_mode": amount_mode,
                     "accepted_assets": accepted_assets,
                 }
             ),
