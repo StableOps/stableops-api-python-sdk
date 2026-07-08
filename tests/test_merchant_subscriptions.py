@@ -194,6 +194,7 @@ def test_portal_invoice_checkout_session_builds_checkout_url() -> None:
 
     session = api.invoices.checkout_session(
         "inv_1",
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         success_url="https://merchant.test/success",
         cancel_url="https://merchant.test/cancel",
         walletconnect_project_id="wc_123",
@@ -205,12 +206,38 @@ def test_portal_invoice_checkout_session_builds_checkout_url() -> None:
         "success_url": "https://merchant.test/success",
         "cancel_url": "https://merchant.test/cancel",
         "walletconnect_project_id": "wc_123",
+        "accepted_assets": [{"chain": "base-sepolia", "asset": "USDC"}],
     }
     assert http.last_request["idempotency_key"] == "checkout_1"
     assert session.checkout_session_id == "cs_1"
     assert session.client_secret == "cs_secret"
     assert session.checkout_url == "https://checkout.test/c/cs_1?client_secret=cs_secret"
-    assert session.payment_order.merchant_order_id == "euinv_inv_1"
+
+
+def test_portal_invoice_pay_sends_accepted_assets() -> None:
+    http = FakeHttp(
+        {
+            "invoice_id": "inv_1",
+            "payment_order_id": "po_1",
+            "status": "open",
+            "payment_order": _wire_payment_order(),
+        }
+    )
+    api = MerchantPortalApi(http)  # type: ignore[arg-type]
+
+    result = api.invoices.pay(
+        "inv_1",
+        accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
+        idempotency_key="pay_1",
+    )
+
+    assert http.last_request["path"] == "/v1/merchant/portal/invoices/inv_1/pay"
+    assert http.last_request["body"] == {
+        "accepted_assets": [{"chain": "base-sepolia", "asset": "USDC"}],
+    }
+    assert http.last_request["idempotency_key"] == "pay_1"
+    assert result.payment_order_id == "po_1"
+    assert result.payment_order.merchant_order_id == "euinv_inv_1"
 
 
 def test_stableops_portal_uses_portal_token_and_parent_options() -> None:
@@ -245,7 +272,6 @@ def test_settings_update_uses_wire_field_names() -> None:
             "pay_window_days": 3,
             "renewal_lead_days": 2,
             "grace_days": 1,
-            "accepted_chains": ["base", "tron"],
             "payment_amount_mode": "auto",
         }
     )
@@ -253,14 +279,12 @@ def test_settings_update_uses_wire_field_names() -> None:
 
     settings = api.settings.update(
         pay_window_days=3,
-        accepted_chains=["base", "tron"],
         payment_amount_mode="auto",
     )
 
     assert http.last_request["path"] == "/v1/merchant/settings"
     assert http.last_request["body"] == {
         "pay_window_days": 3,
-        "accepted_chains": ["base", "tron"],
         "payment_amount_mode": "auto",
     }
     assert settings.pay_window_days == 3
