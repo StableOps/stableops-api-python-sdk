@@ -67,7 +67,7 @@ from stableops.webhooks import (
     verify_webhook_signature,
 )
 
-__version__ = "0.12.0"
+__version__ = "0.13.0"
 
 __all__ = [
     # Client
