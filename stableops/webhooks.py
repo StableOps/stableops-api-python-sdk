@@ -10,8 +10,10 @@ from stableops.types import (
     ReplayDeadLettersResult,
     ReplayDeliveryResult,
     WebhookDelivery,
+    WebhookDeliveryList,
     WebhookDeliveryStatus,
     WebhookEndpoint,
+    WebhookEndpointList,
     WebhookEventType,
 )
 
@@ -22,6 +24,13 @@ EVENT_ID_HEADER = "x-event-id"
 DELIVERY_ID_HEADER = "x-delivery-id"
 
 DEFAULT_TOLERANCE_SECONDS = 300  # 5 minutes
+
+
+class _Unset:
+    pass
+
+
+_UNSET = _Unset()
 
 
 class VerificationResult(NamedTuple):
@@ -158,24 +167,44 @@ class WebhooksApi:
         )
         return WebhookEndpoint(**response)
 
-    def list_endpoints(self) -> List[WebhookEndpoint]:
+    def list_endpoints(
+        self, limit: Optional[int] = None, offset: Optional[int] = None
+    ) -> List[WebhookEndpoint]:
         """List webhook endpoints."""
+        return self.list_endpoints_page(limit=limit, offset=offset).items
+
+    def list_endpoints_page(
+        self, limit: Optional[int] = None, offset: Optional[int] = None
+    ) -> WebhookEndpointList:
+        """List webhook endpoints with pagination metadata."""
         response = self.http.request(
             method="GET",
             path="/v1/webhook-endpoints",
+            query={"limit": limit, "offset": offset},
         )
-        return [WebhookEndpoint(**item) for item in response["items"]]
+        return WebhookEndpointList(**response)
+
+    def remove_endpoint(self, endpoint_id: str) -> Dict[str, bool]:
+        """Delete a webhook endpoint."""
+        response = self.http.request(
+            method="DELETE",
+            path=f"/v1/webhook-endpoints/{endpoint_id}",
+        )
+        success = response.get("success") if isinstance(response, dict) else None
+        if not isinstance(success, bool):
+            raise ValueError("Invalid webhook endpoint deletion response")
+        return {"success": success}
 
     def update_endpoint(
         self,
         endpoint_id: str,
-        description: Optional[str] = None,
+        description: Union[str, None, _Unset] = _UNSET,
         enabled_events: Optional[List[WebhookEventType]] = None,
         redact_metadata: Optional[bool] = None,
     ) -> WebhookEndpoint:
         """Update a webhook endpoint."""
         body: Dict[str, Any] = {}
-        if description is not None:
+        if description is not _UNSET:
             body["description"] = description
         if enabled_events is not None:
             body["enabled_events"] = enabled_events
@@ -212,8 +241,26 @@ class WebhooksApi:
         endpoint_id: Optional[str] = None,
         payment_order_id: Optional[str] = None,
         limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[WebhookDelivery]:
         """List webhook deliveries."""
+        return self.list_deliveries_page(
+            status=status,
+            endpoint_id=endpoint_id,
+            payment_order_id=payment_order_id,
+            limit=limit,
+            offset=offset,
+        ).items
+
+    def list_deliveries_page(
+        self,
+        status: Optional[WebhookDeliveryStatus] = None,
+        endpoint_id: Optional[str] = None,
+        payment_order_id: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> WebhookDeliveryList:
+        """List webhook deliveries with pagination metadata."""
         response = self.http.request(
             method="GET",
             path="/v1/webhook-deliveries",
@@ -222,9 +269,10 @@ class WebhooksApi:
                 "endpoint_id": endpoint_id,
                 "payment_order_id": payment_order_id,
                 "limit": limit,
+                "offset": offset,
             },
         )
-        return [WebhookDelivery(**item) for item in response["items"]]
+        return WebhookDeliveryList(**response)
 
     def replay_delivery(self, delivery_id: str) -> ReplayDeliveryResult:
         """Replay a single delivery by its ID."""
@@ -283,24 +331,45 @@ class AsyncWebhooksApi:
         )
         return WebhookEndpoint(**response)
 
-    async def list_endpoints(self) -> List[WebhookEndpoint]:
+    async def list_endpoints(
+        self, limit: Optional[int] = None, offset: Optional[int] = None
+    ) -> List[WebhookEndpoint]:
         """List webhook endpoints (async)."""
+        page = await self.list_endpoints_page(limit=limit, offset=offset)
+        return page.items
+
+    async def list_endpoints_page(
+        self, limit: Optional[int] = None, offset: Optional[int] = None
+    ) -> WebhookEndpointList:
+        """List webhook endpoints with pagination metadata (async)."""
         response = await self.http.request(
             method="GET",
             path="/v1/webhook-endpoints",
+            query={"limit": limit, "offset": offset},
         )
-        return [WebhookEndpoint(**item) for item in response["items"]]
+        return WebhookEndpointList(**response)
+
+    async def remove_endpoint(self, endpoint_id: str) -> Dict[str, bool]:
+        """Delete a webhook endpoint (async)."""
+        response = await self.http.request(
+            method="DELETE",
+            path=f"/v1/webhook-endpoints/{endpoint_id}",
+        )
+        success = response.get("success") if isinstance(response, dict) else None
+        if not isinstance(success, bool):
+            raise ValueError("Invalid webhook endpoint deletion response")
+        return {"success": success}
 
     async def update_endpoint(
         self,
         endpoint_id: str,
-        description: Optional[str] = None,
+        description: Union[str, None, _Unset] = _UNSET,
         enabled_events: Optional[List[WebhookEventType]] = None,
         redact_metadata: Optional[bool] = None,
     ) -> WebhookEndpoint:
         """Update a webhook endpoint (async)."""
         body: Dict[str, Any] = {}
-        if description is not None:
+        if description is not _UNSET:
             body["description"] = description
         if enabled_events is not None:
             body["enabled_events"] = enabled_events
@@ -337,8 +406,27 @@ class AsyncWebhooksApi:
         endpoint_id: Optional[str] = None,
         payment_order_id: Optional[str] = None,
         limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[WebhookDelivery]:
         """List webhook deliveries (async)."""
+        page = await self.list_deliveries_page(
+            status=status,
+            endpoint_id=endpoint_id,
+            payment_order_id=payment_order_id,
+            limit=limit,
+            offset=offset,
+        )
+        return page.items
+
+    async def list_deliveries_page(
+        self,
+        status: Optional[WebhookDeliveryStatus] = None,
+        endpoint_id: Optional[str] = None,
+        payment_order_id: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> WebhookDeliveryList:
+        """List webhook deliveries with pagination metadata (async)."""
         response = await self.http.request(
             method="GET",
             path="/v1/webhook-deliveries",
@@ -347,9 +435,10 @@ class AsyncWebhooksApi:
                 "endpoint_id": endpoint_id,
                 "payment_order_id": payment_order_id,
                 "limit": limit,
+                "offset": offset,
             },
         )
-        return [WebhookDelivery(**item) for item in response["items"]]
+        return WebhookDeliveryList(**response)
 
     async def replay_delivery(self, delivery_id: str) -> ReplayDeliveryResult:
         """Replay a single delivery by its ID (async)."""

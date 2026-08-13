@@ -115,9 +115,9 @@ def test_invalid_header_format() -> None:
 
 def test_webhooks_api_matches_server_routes() -> None:
     assert not hasattr(WebhooksApi, "retrieve")
-    assert not hasattr(WebhooksApi, "delete")
+    assert hasattr(WebhooksApi, "remove_endpoint")
     assert not hasattr(AsyncWebhooksApi, "retrieve")
-    assert not hasattr(AsyncWebhooksApi, "delete")
+    assert hasattr(AsyncWebhooksApi, "remove_endpoint")
 
 
 def test_webhooks_api_exposes_delivery_and_replay_methods() -> None:
@@ -182,7 +182,9 @@ def test_list_deliveries_filters_and_parses() -> None:
                     "created_at": "2026-06-01T00:00:00.000Z",
                     "payload": {"type": "payment.finalized"},
                 }
-            ]
+            ],
+            "has_more": False,
+            "total": 1,
         }
     )
     api = WebhooksApi(http)  # type: ignore[arg-type]
@@ -194,9 +196,26 @@ def test_list_deliveries_filters_and_parses() -> None:
         "endpoint_id": "we_1",
         "payment_order_id": None,
         "limit": 20,
+        "offset": None,
     }
     assert deliveries[0].attempts == 3
     assert deliveries[0].payload == {"type": "payment.finalized"}
+
+
+def test_webhook_pages_and_delete_endpoint() -> None:
+    page_http = _FakeHttp({"items": [], "has_more": True, "total": 21})
+    api = WebhooksApi(page_http)  # type: ignore[arg-type]
+
+    page = api.list_endpoints_page(limit=20, offset=20)
+
+    assert page.has_more is True
+    assert page.total == 21
+    assert page_http.last_request["query"] == {"limit": 20, "offset": 20}
+
+    delete_http = _FakeHttp({"success": True})
+    delete_api = WebhooksApi(delete_http)  # type: ignore[arg-type]
+    assert delete_api.remove_endpoint("we_1") == {"success": True}
+    assert delete_http.last_request["method"] == "DELETE"
 
 
 def test_replay_dead_letters_parses_result() -> None:

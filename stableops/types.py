@@ -2,7 +2,7 @@
 
 from typing import Any, Dict, List, Literal, Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 # Type aliases
 ChainId = Literal[
@@ -106,6 +106,14 @@ class PaymentOrderDetail(PaymentOrder):
     """Detailed payment order with timeline."""
 
     timeline: List[PaymentOrderTimelineEntry]
+
+
+class PaymentOrderList(BaseModel):
+    """Paginated payment order response."""
+
+    items: List[PaymentOrder]
+    has_more: bool
+    total: int
 
 
 class CreateCheckoutSessionInput(CreatePaymentOrderInput):
@@ -214,7 +222,9 @@ class WebhookDelivery(BaseModel):
 class ReplayDeliveryResult(BaseModel):
     """Result of replaying a single delivery / event."""
 
-    delivery_id: str
+    model_config = ConfigDict(populate_by_name=True)
+
+    delivery_id: str = Field(alias="deliveryId")
 
 
 class ReplayDeadLetterItem(BaseModel):
@@ -229,6 +239,83 @@ class ReplayDeadLettersResult(BaseModel):
 
     replayed: int
     items: List[ReplayDeadLetterItem] = Field(default_factory=list)
+
+
+class WebhookEndpointList(BaseModel):
+    """Paginated webhook endpoint response."""
+
+    items: List[WebhookEndpoint]
+    has_more: bool
+    total: int
+
+
+class WebhookDeliveryList(BaseModel):
+    """Paginated webhook delivery response."""
+
+    items: List[WebhookDelivery]
+    has_more: bool
+    total: int
+
+
+class AgentSession(BaseModel):
+    """Agent session."""
+
+    id: str
+    label: Optional[str]
+    created_at: str
+    expires_at: Optional[str]
+    revoked_at: Optional[str]
+
+
+class AgentPolicy(BaseModel):
+    """Workspace agent policy."""
+
+    id: str
+    allowed_tools: List[str]
+    require_approval: bool
+    created_at: str
+    updated_at: str
+
+
+class AgentAction(BaseModel):
+    """Agent action audit record."""
+
+    id: str
+    agent_session_id: str
+    tool: str
+    input: Any
+    status: str
+    approver_id: Optional[str]
+    decided_at: Optional[str]
+    executed_at: Optional[str]
+    result: Any = None
+    error_message: Optional[str]
+    created_at: str
+
+
+class AgentSessionList(BaseModel):
+    """Paginated agent session response."""
+
+    items: List[AgentSession]
+    has_more: bool
+    total: int
+
+
+class AgentActionList(BaseModel):
+    """Paginated agent action response."""
+
+    items: List[AgentAction]
+    has_more: bool
+    total: int
+
+
+class RequestAgentActionResult(BaseModel):
+    """Agent policy decision for a requested action."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    decision: Literal["auto_allowed", "pending_approval"]
+    action_id: str = Field(alias="actionId")
 
 
 class MerchantPlan(BaseModel):

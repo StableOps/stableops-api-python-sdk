@@ -49,6 +49,7 @@ def test_create_does_not_send_settlement_asset_and_forwards_amount_mode() -> Non
     assert "settlement_asset" not in body
     assert body["amount_mode"] == "auto"
     assert http.last_request["idempotency_key"] == "m_1"
+    assert http.last_request["retryable"] is True
     # requested_amount 透传，settlement_asset 可空
     assert order.requested_amount == "10.00"
     assert order.settlement_asset == "USDC"
@@ -84,3 +85,14 @@ def test_from_wire_tolerates_missing_settlement_asset() -> None:
 
     assert order.settlement_asset is None
     assert order.requested_amount is None
+
+
+def test_list_page_preserves_pagination_metadata() -> None:
+    http = FakeHttp({"items": [_wire_order()], "has_more": True, "total": 3})
+    api = PaymentOrdersApi(http)  # type: ignore[arg-type]
+
+    page = api.list_page(limit=1, offset=1)
+
+    assert page.has_more is True
+    assert page.total == 3
+    assert http.last_request["query"]["offset"] == 1

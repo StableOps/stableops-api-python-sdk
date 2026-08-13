@@ -3,6 +3,7 @@
 from typing import Any, Optional
 
 from stableops.addresses import AddressesApi, AsyncAddressesApi
+from stableops.agents import AgentsApi, AsyncAgentsApi
 from stableops.checkout_sessions import AsyncCheckoutSessionsApi, CheckoutSessionsApi
 from stableops.http import AsyncHttpClient, DebugOption, HttpClient
 from stableops.merchant_subscriptions import (
@@ -26,7 +27,6 @@ class StableOps:
         >>> order = client.payment_orders.create(
         ...     merchant_order_id="order_123",
         ...     amount="10.00",
-        ...     settlement_asset="USDC",
         ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         ...     expires_at="2026-06-20T12:30:00Z",
         ... )
@@ -67,6 +67,7 @@ class StableOps:
         self._checkout_base_url = checkout_base_url
 
         self.addresses = AddressesApi(self._http)
+        self.agents = AgentsApi(self._http)
         self.merchant_subscriptions = MerchantSubscriptionsApi(self._http)
         self.payment_orders = PaymentOrdersApi(self._http)
         self.checkout_sessions = CheckoutSessionsApi(self._http, checkout_base_url)
@@ -109,7 +110,6 @@ class AsyncStableOps:
         ...     order = await client.payment_orders.create(
         ...         merchant_order_id="order_123",
         ...         amount="10.00",
-        ...         settlement_asset="USDC",
         ...         accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
         ...         expires_at="2026-06-20T12:30:00Z",
         ...     )
@@ -150,6 +150,7 @@ class AsyncStableOps:
         self._checkout_base_url = checkout_base_url
 
         self.addresses = AsyncAddressesApi(self._http)
+        self.agents = AsyncAgentsApi(self._http)
         self.merchant_subscriptions = AsyncMerchantSubscriptionsApi(self._http)
         self.payment_orders = AsyncPaymentOrdersApi(self._http)
         self.checkout_sessions = AsyncCheckoutSessionsApi(self._http, checkout_base_url)

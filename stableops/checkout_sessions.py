@@ -118,6 +118,7 @@ class CheckoutSessionsApi:
             path="/v1/checkout-sessions",
             body=body,
             idempotency_key=merchant_order_id,
+            retryable=True,
         )
         return CheckoutSession(**_session_from_wire(response, self.checkout_base_url))
 
@@ -154,5 +155,6 @@ class AsyncCheckoutSessionsApi:
             path="/v1/checkout-sessions",
             body=body,
             idempotency_key=merchant_order_id,
+            retryable=True,
         )
         return CheckoutSession(**_session_from_wire(response, self.checkout_base_url))

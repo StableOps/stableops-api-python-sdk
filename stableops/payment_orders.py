@@ -7,6 +7,7 @@ from stableops.types import (
     AmountMode,
     PaymentOrder,
     PaymentOrderDetail,
+    PaymentOrderList,
 )
 
 
@@ -122,6 +123,7 @@ class PaymentOrdersApi:
             path="/v1/payment-orders",
             body=body,
             idempotency_key=merchant_order_id,
+            retryable=True,
         )
         return PaymentOrder(**_from_wire(response))
 
@@ -147,6 +149,7 @@ class PaymentOrdersApi:
         self,
         status: Optional[str] = None,
         limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[PaymentOrder]:
         """List payment orders.
 
@@ -160,12 +163,25 @@ class PaymentOrdersApi:
         Example:
             >>> orders = client.payment_orders.list(status="finalized", limit=10)
         """
+        return self.list_page(status=status, limit=limit, offset=offset).items
+
+    def list_page(
+        self,
+        status: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> PaymentOrderList:
+        """List payment orders with pagination metadata."""
         response = self.http.request(
             method="GET",
             path="/v1/payment-orders",
-            query={"status": status, "limit": limit},
+            query={"status": status, "limit": limit, "offset": offset},
         )
-        return [PaymentOrder(**_from_wire(item)) for item in response["items"]]
+        return PaymentOrderList(
+            items=[PaymentOrder(**_from_wire(item)) for item in response["items"]],
+            has_more=response["has_more"],
+            total=response["total"],
+        )
 
     def cancel(self, order_id: str) -> PaymentOrder:
         """Cancel a payment order.
@@ -215,6 +231,7 @@ class AsyncPaymentOrdersApi:
             path="/v1/payment-orders",
             body=body,
             idempotency_key=merchant_order_id,
+            retryable=True,
         )
         return PaymentOrder(**_from_wire(response))
 
@@ -230,14 +247,29 @@ class AsyncPaymentOrdersApi:
         self,
         status: Optional[str] = None,
         limit: Optional[int] = None,
+        offset: Optional[int] = None,
     ) -> List[PaymentOrder]:
         """List payment orders (async)."""
+        page = await self.list_page(status=status, limit=limit, offset=offset)
+        return page.items
+
+    async def list_page(
+        self,
+        status: Optional[str] = None,
+        limit: Optional[int] = None,
+        offset: Optional[int] = None,
+    ) -> PaymentOrderList:
+        """List payment orders with pagination metadata (async)."""
         response = await self.http.request(
             method="GET",
             path="/v1/payment-orders",
-            query={"status": status, "limit": limit},
+            query={"status": status, "limit": limit, "offset": offset},
         )
-        return [PaymentOrder(**_from_wire(item)) for item in response["items"]]
+        return PaymentOrderList(
+            items=[PaymentOrder(**_from_wire(item)) for item in response["items"]],
+            has_more=response["has_more"],
+            total=response["total"],
+        )
 
     async def cancel(self, order_id: str) -> PaymentOrder:
         """Cancel a payment order (async)."""

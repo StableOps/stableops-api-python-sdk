@@ -33,6 +33,9 @@ DebugCallback = Callable[[Dict[str, Any]], None]
 DebugOption = Union[bool, DebugCallback, None]
 
 _SENSITIVE_HEADERS = frozenset({"authorization", IDEMPOTENCY_HEADER, "cookie", "set-cookie"})
+_SENSITIVE_BODY_FIELDS = frozenset(
+    {"secret", "portal_token", "portaltoken", "client_secret", "clientsecret"}
+)
 
 _logger = logging.getLogger("stableops")
 
@@ -59,6 +62,22 @@ def _mask_headers(headers: Mapping[str, str]) -> Dict[str, str]:
         else:
             out[k] = v
     return out
+
+
+def _mask_body(value: Any) -> Any:
+    """Recursively mask known secret fields before sending data to debug hooks."""
+    if isinstance(value, Mapping):
+        result: Dict[str, Any] = {}
+        for key, item in value.items():
+            normalized = str(key).lower()
+            if normalized in _SENSITIVE_BODY_FIELDS:
+                result[str(key)] = mask_secret(item) if isinstance(item, str) else "***"
+            else:
+                result[str(key)] = _mask_body(item)
+        return result
+    if isinstance(value, (list, tuple)):
+        return [_mask_body(item) for item in value]
+    return value
 
 
 def _resolve_debug(option: DebugOption) -> Optional[DebugCallback]:
@@ -173,6 +192,7 @@ class HttpClient:
         body: Optional[Dict[str, Any]] = None,
         query: Optional[Dict[str, Any]] = None,
         idempotency_key: Optional[str] = None,
+        retryable: Optional[bool] = None,
     ) -> Any:
         """Make HTTP request with retry logic.
 
@@ -182,6 +202,7 @@ class HttpClient:
             body: Request body (JSON)
             query: Query parameters
             idempotency_key: Idempotency key for write operations
+            retryable: Whether retries are safe. Defaults to true only for GET requests.
 
         Returns:
             Response JSON
@@ -199,6 +220,7 @@ class HttpClient:
         headers = {}
         if idempotency_key:
             headers[IDEMPOTENCY_HEADER] = idempotency_key
+        should_retry = method == "GET" if retryable is None else retryable
 
         for attempt in range(self.max_retries + 1):
             started = time.monotonic()
@@ -210,7 +232,7 @@ class HttpClient:
                         "method": method,
                         "url": f"{self.base_url}{url}",
                         "headers": _mask_headers(merged),
-                        "body": body,
+                        "body": _mask_body(body),
                         "attempt": attempt,
                     }
                 )
@@ -229,12 +251,14 @@ class HttpClient:
                             "url": f"{self.base_url}{url}",
                             "status": response.status_code,
                             "duration_ms": int((time.monotonic() - started) * 1000),
-                            "headers": dict(response.headers),
-                            "body": _safe_json(response),
+                            "headers": _mask_headers(dict(response.headers)),
+                            "body": _mask_body(_safe_json(response)),
                             "attempt": attempt,
                         }
                     )
                 response.raise_for_status()
+                if response.status_code == 204 or not response.content:
+                    return None
                 return response.json()
 
             except httpx.HTTPStatusError as e:
@@ -251,7 +275,7 @@ class HttpClient:
                     ) from e
 
                 # Retry on 429 and 5xx
-                if attempt < self.max_retries and is_retryable_status(status):
+                if should_retry and attempt < self.max_retries and is_retryable_status(status):
                     retry_after = self._parse_retry_after(e.response)
                     delay = compute_delay(attempt, self.base_delay, self.max_delay, retry_after)
                     time.sleep(delay)
@@ -279,7 +303,7 @@ class HttpClient:
                         }
                     )
                 # Retry on timeout and network errors
-                if attempt < self.max_retries:
+                if should_retry and attempt < self.max_retries:
                     delay = compute_delay(attempt, self.base_delay, self.max_delay)
                     time.sleep(delay)
                     continue
@@ -389,6 +413,7 @@ class AsyncHttpClient:
         body: Optional[Dict[str, Any]] = None,
         query: Optional[Dict[str, Any]] = None,
         idempotency_key: Optional[str] = None,
+        retryable: Optional[bool] = None,
     ) -> Any:
         """Make async HTTP request with retry logic."""
         import asyncio
@@ -402,6 +427,7 @@ class AsyncHttpClient:
         headers = {}
         if idempotency_key:
             headers[IDEMPOTENCY_HEADER] = idempotency_key
+        should_retry = method == "GET" if retryable is None else retryable
 
         for attempt in range(self.max_retries + 1):
             started = time.monotonic()
@@ -413,7 +439,7 @@ class AsyncHttpClient:
                         "method": method,
                         "url": f"{self.base_url}{url}",
                         "headers": _mask_headers(merged),
-                        "body": body,
+                        "body": _mask_body(body),
                         "attempt": attempt,
                     }
                 )
@@ -432,12 +458,14 @@ class AsyncHttpClient:
                             "url": f"{self.base_url}{url}",
                             "status": response.status_code,
                             "duration_ms": int((time.monotonic() - started) * 1000),
-                            "headers": dict(response.headers),
-                            "body": _safe_json(response),
+                            "headers": _mask_headers(dict(response.headers)),
+                            "body": _mask_body(_safe_json(response)),
                             "attempt": attempt,
                         }
                     )
                 response.raise_for_status()
+                if response.status_code == 204 or not response.content:
+                    return None
                 return response.json()
 
             except httpx.HTTPStatusError as e:
@@ -452,7 +480,7 @@ class AsyncHttpClient:
                         details=error_data.get("details"),
                     ) from e
 
-                if attempt < self.max_retries and is_retryable_status(status):
+                if should_retry and attempt < self.max_retries and is_retryable_status(status):
                     retry_after = self._parse_retry_after(e.response)
                     delay = compute_delay(attempt, self.base_delay, self.max_delay, retry_after)
                     await asyncio.sleep(delay)
@@ -478,7 +506,7 @@ class AsyncHttpClient:
                             "error": {"type": type(e).__name__, "message": str(e)},
                         }
                     )
-                if attempt < self.max_retries:
+                if should_retry and attempt < self.max_retries:
                     delay = compute_delay(attempt, self.base_delay, self.max_delay)
                     await asyncio.sleep(delay)
                     continue

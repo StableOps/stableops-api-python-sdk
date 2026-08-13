@@ -17,6 +17,11 @@ from stableops.client import AsyncStableOps, StableOps
 from stableops.errors import StableOpsError
 from stableops.types import (
     AcceptedAssetInput,
+    AgentAction,
+    AgentActionList,
+    AgentPolicy,
+    AgentSession,
+    AgentSessionList,
     AmountMode,
     CancelEndUserSubscriptionInput,
     ChangeEndUserSubscriptionPlanInput,
@@ -44,6 +49,7 @@ from stableops.types import (
     PaymentOrder,
     PaymentOrderDetail,
     PaymentOrderInstruction,
+    PaymentOrderList,
     PaymentOrderStatus,
     PaymentOrderTimelineEntry,
     PayMerchantInvoiceResponse,
@@ -51,12 +57,15 @@ from stableops.types import (
     ReplayDeadLetterItem,
     ReplayDeadLettersResult,
     ReplayDeliveryResult,
+    RequestAgentActionResult,
     UpdateMerchantBillingSettingsInput,
     UpdateMerchantPlanInput,
     UpdateWebhookEndpointInput,
     WebhookDelivery,
+    WebhookDeliveryList,
     WebhookDeliveryStatus,
     WebhookEndpoint,
+    WebhookEndpointList,
     WebhookEventType,
 )
 from stableops.webhooks import (
@@ -67,7 +76,7 @@ from stableops.webhooks import (
     verify_webhook_signature,
 )
 
-__version__ = "0.13.0"
+__version__ = "1.0.0"
 
 __all__ = [
     # Client
@@ -77,6 +86,11 @@ __all__ = [
     "StableOpsError",
     # Types
     "AcceptedAssetInput",
+    "AgentAction",
+    "AgentActionList",
+    "AgentPolicy",
+    "AgentSession",
+    "AgentSessionList",
     "AmountMode",
     "CancelEndUserSubscriptionInput",
     "ChangeEndUserSubscriptionPlanInput",
@@ -104,6 +118,7 @@ __all__ = [
     "PaymentOrder",
     "PaymentOrderDetail",
     "PaymentOrderInstruction",
+    "PaymentOrderList",
     "PaymentOrderStatus",
     "PaymentOrderTimelineEntry",
     "PayMerchantInvoiceResponse",
@@ -111,12 +126,15 @@ __all__ = [
     "ReplayDeadLetterItem",
     "ReplayDeadLettersResult",
     "ReplayDeliveryResult",
+    "RequestAgentActionResult",
     "UpdateMerchantBillingSettingsInput",
     "UpdateMerchantPlanInput",
     "UpdateWebhookEndpointInput",
     "WebhookDelivery",
+    "WebhookDeliveryList",
     "WebhookDeliveryStatus",
     "WebhookEndpoint",
+    "WebhookEndpointList",
     "WebhookEventType",
     # Webhooks
     "verify_webhook_signature",

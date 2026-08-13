@@ -1,6 +1,6 @@
 """Merchant subscription APIs."""
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 from urllib.parse import quote
 
 from stableops.checkout_sessions import DEFAULT_CHECKOUT_BASE_URL
@@ -28,6 +28,47 @@ from stableops.types import (
 def _compact(body: Dict[str, Any]) -> Dict[str, Any]:
     """Remove omitted optional fields from a request body."""
     return {key: value for key, value in body.items() if value is not None}
+
+
+class _Unset:
+    pass
+
+
+_UNSET = _Unset()
+
+
+def _plan_update_body(
+    *,
+    code: Optional[str],
+    name: Optional[str],
+    description: Union[str, None, _Unset],
+    group_key: Optional[str],
+    amount: Optional[str],
+    interval: Optional[MerchantPlanInterval],
+    interval_count: Optional[int],
+    trial_days: Union[int, None, _Unset],
+    metadata: Union[Dict[str, Any], None, _Unset],
+    is_template: Optional[bool],
+) -> Dict[str, Any]:
+    """Build a plan update body while preserving explicit null values."""
+    body = _compact(
+        {
+            "code": code,
+            "name": name,
+            "group_key": group_key,
+            "amount": amount,
+            "interval": interval,
+            "interval_count": interval_count,
+            "is_template": is_template,
+        }
+    )
+    if description is not _UNSET:
+        body["description"] = description
+    if trial_days is not _UNSET:
+        body["trial_days"] = trial_days
+    if metadata is not _UNSET:
+        body["metadata"] = metadata
+    return body
 
 
 def _path(value: str) -> str:
@@ -169,32 +210,30 @@ class MerchantPlansResource:
         plan_id: str,
         code: Optional[str] = None,
         name: Optional[str] = None,
-        description: Optional[str] = None,
+        description: Union[str, None, _Unset] = _UNSET,
         group_key: Optional[str] = None,
         amount: Optional[str] = None,
         interval: Optional[MerchantPlanInterval] = None,
         interval_count: Optional[int] = None,
-        trial_days: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        trial_days: Union[int, None, _Unset] = _UNSET,
+        metadata: Union[Dict[str, Any], None, _Unset] = _UNSET,
         is_template: Optional[bool] = None,
         idempotency_key: Optional[str] = None,
     ) -> MerchantPlan:
         response = self.http.request(
             method="PUT",
             path=f"/v1/merchant/plans/{_path(plan_id)}",
-            body=_compact(
-                {
-                    "code": code,
-                    "name": name,
-                    "description": description,
-                    "group_key": group_key,
-                    "amount": amount,
-                    "interval": interval,
-                    "interval_count": interval_count,
-                    "trial_days": trial_days,
-                    "metadata": metadata,
-                    "is_template": is_template,
-                }
+            body=_plan_update_body(
+                code=code,
+                name=name,
+                description=description,
+                group_key=group_key,
+                amount=amount,
+                interval=interval,
+                interval_count=interval_count,
+                trial_days=trial_days,
+                metadata=metadata,
+                is_template=is_template,
             ),
             idempotency_key=idempotency_key,
         )
@@ -630,32 +669,30 @@ class AsyncMerchantPlansResource:
         plan_id: str,
         code: Optional[str] = None,
         name: Optional[str] = None,
-        description: Optional[str] = None,
+        description: Union[str, None, _Unset] = _UNSET,
         group_key: Optional[str] = None,
         amount: Optional[str] = None,
         interval: Optional[MerchantPlanInterval] = None,
         interval_count: Optional[int] = None,
-        trial_days: Optional[int] = None,
-        metadata: Optional[Dict[str, Any]] = None,
+        trial_days: Union[int, None, _Unset] = _UNSET,
+        metadata: Union[Dict[str, Any], None, _Unset] = _UNSET,
         is_template: Optional[bool] = None,
         idempotency_key: Optional[str] = None,
     ) -> MerchantPlan:
         response = await self.http.request(
             method="PUT",
             path=f"/v1/merchant/plans/{_path(plan_id)}",
-            body=_compact(
-                {
-                    "code": code,
-                    "name": name,
-                    "description": description,
-                    "group_key": group_key,
-                    "amount": amount,
-                    "interval": interval,
-                    "interval_count": interval_count,
-                    "trial_days": trial_days,
-                    "metadata": metadata,
-                    "is_template": is_template,
-                }
+            body=_plan_update_body(
+                code=code,
+                name=name,
+                description=description,
+                group_key=group_key,
+                amount=amount,
+                interval=interval,
+                interval_count=interval_count,
+                trial_days=trial_days,
+                metadata=metadata,
+                is_template=is_template,
             ),
             idempotency_key=idempotency_key,
         )

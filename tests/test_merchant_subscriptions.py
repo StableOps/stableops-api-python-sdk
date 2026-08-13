@@ -297,6 +297,19 @@ def test_optional_fields_are_omitted_from_write_bodies() -> None:
     assert http.last_request["body"] == {"name": "Starter v2"}
 
 
+def test_plan_update_can_explicitly_clear_nullable_fields() -> None:
+    http = FakeHttp(_wire_plan())
+    api = MerchantSubscriptionsApi(http)  # type: ignore[arg-type]
+
+    api.plans.update("plan_1", description=None, trial_days=None, metadata=None)
+
+    assert http.last_request["body"] == {
+        "description": None,
+        "trial_days": None,
+        "metadata": None,
+    }
+
+
 def test_settings_update_uses_wire_field_names() -> None:
     http = FakeHttp(
         {
