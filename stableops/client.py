@@ -74,7 +74,11 @@ class StableOps:
         self.webhooks = WebhooksApi(self._http)
 
     def portal(self, portal_token: str) -> MerchantPortalApi:
-        """Create an end-user portal client using a portal session token."""
+        """Create an end-user portal client using a portal session token.
+
+        The returned client owns a separate connection pool. Use it as a context
+        manager or call ``close()`` when it is no longer needed.
+        """
         return MerchantPortalApi(
             HttpClient(
                 api_key=portal_token,
@@ -157,7 +161,11 @@ class AsyncStableOps:
         self.webhooks = AsyncWebhooksApi(self._http)
 
     def portal(self, portal_token: str) -> AsyncMerchantPortalApi:
-        """Create an async end-user portal client using a portal session token."""
+        """Create an async end-user portal client using a portal session token.
+
+        The returned client owns a separate connection pool. Use it as an async
+        context manager or await ``close()`` when it is no longer needed.
+        """
         return AsyncMerchantPortalApi(
             AsyncHttpClient(
                 api_key=portal_token,

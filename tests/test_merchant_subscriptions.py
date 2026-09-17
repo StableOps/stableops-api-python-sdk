@@ -2,8 +2,14 @@
 
 from typing import Any, Dict
 
+import pytest
+
 from stableops.client import StableOps
-from stableops.merchant_subscriptions import MerchantPortalApi, MerchantSubscriptionsApi
+from stableops.merchant_subscriptions import (
+    AsyncMerchantPortalApi,
+    MerchantPortalApi,
+    MerchantSubscriptionsApi,
+)
 
 
 def _wire_plan(**overrides: Any) -> Dict[str, Any]:
@@ -97,10 +103,22 @@ class FakeHttp:
     def __init__(self, response: Any) -> None:
         self.response = response
         self.last_request: Dict[str, Any] = {}
+        self.closed = False
 
     def request(self, **kwargs: Any) -> Any:
         self.last_request = kwargs
         return self.response
+
+    def close(self) -> None:
+        self.closed = True
+
+
+class FakeAsyncHttp:
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def close(self) -> None:
+        self.closed = True
 
 
 def test_plan_create_uses_snake_case_body_and_idempotency_key() -> None:
@@ -279,12 +297,34 @@ def test_stableops_portal_uses_portal_token_and_parent_options() -> None:
     )
 
     try:
-        portal = client.portal("eps_token")
-        assert portal.checkout_base_url == "https://checkout.test"
-        assert portal.plans.http.client.headers["authorization"] == "Bearer eps_token"
-        assert portal.plans.http.base_url == "https://api.test.local"
+        with client.portal("eps_token") as portal:
+            assert portal.checkout_base_url == "https://checkout.test"
+            assert portal.plans.http.client.headers["authorization"] == "Bearer eps_token"
+            assert portal.plans.http.base_url == "https://api.test.local"
+        assert portal.plans.http.client.is_closed
     finally:
         client.close()
+
+
+def test_merchant_portal_context_manager_closes_http_client() -> None:
+    http = FakeHttp(_wire_plan())
+
+    with MerchantPortalApi(http) as portal:  # type: ignore[arg-type]
+        assert portal.checkout_base_url == "https://pay.stableops.dev"
+        assert not http.closed
+
+    assert http.closed
+
+
+@pytest.mark.asyncio
+async def test_async_merchant_portal_context_manager_closes_http_client() -> None:
+    http = FakeAsyncHttp()
+
+    async with AsyncMerchantPortalApi(http) as portal:  # type: ignore[arg-type]
+        assert portal.checkout_base_url == "https://pay.stableops.dev"
+        assert not http.closed
+
+    assert http.closed
 
 
 def test_optional_fields_are_omitted_from_write_bodies() -> None:

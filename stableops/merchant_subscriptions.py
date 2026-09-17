@@ -602,10 +602,23 @@ class MerchantPortalApi:
     """End-user merchant portal API (synchronous)."""
 
     def __init__(self, http: HttpClient, checkout_base_url: Optional[str] = None) -> None:
+        self._http = http
         self.checkout_base_url = (checkout_base_url or DEFAULT_CHECKOUT_BASE_URL).rstrip("/")
         self.plans = MerchantPortalPlansResource(http)
         self.subscription = MerchantPortalSubscriptionResource(http)
         self.invoices = MerchantPortalInvoicesResource(http, self.checkout_base_url)
+
+    def close(self) -> None:
+        """Close the portal HTTP client."""
+        self._http.close()
+
+    def __enter__(self) -> "MerchantPortalApi":
+        """Context manager entry."""
+        return self
+
+    def __exit__(self, *args: Any) -> None:
+        """Context manager exit."""
+        self.close()
 
 
 class AsyncMerchantPlansResource:
@@ -1061,7 +1074,20 @@ class AsyncMerchantPortalApi:
     """End-user merchant portal API (asynchronous)."""
 
     def __init__(self, http: AsyncHttpClient, checkout_base_url: Optional[str] = None) -> None:
+        self._http = http
         self.checkout_base_url = (checkout_base_url or DEFAULT_CHECKOUT_BASE_URL).rstrip("/")
         self.plans = AsyncMerchantPortalPlansResource(http)
         self.subscription = AsyncMerchantPortalSubscriptionResource(http)
         self.invoices = AsyncMerchantPortalInvoicesResource(http, self.checkout_base_url)
+
+    async def close(self) -> None:
+        """Close the async portal HTTP client."""
+        await self._http.close()
+
+    async def __aenter__(self) -> "AsyncMerchantPortalApi":
+        """Async context manager entry."""
+        return self
+
+    async def __aexit__(self, *args: Any) -> None:
+        """Async context manager exit."""
+        await self.close()
