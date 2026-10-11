@@ -12,7 +12,9 @@ from stableops.merchant_subscriptions import (
     MerchantPortalApi,
     MerchantSubscriptionsApi,
 )
+from stableops.payment_links import AsyncPaymentLinksApi, PaymentLinksApi
 from stableops.payment_orders import AsyncPaymentOrdersApi, PaymentOrdersApi
+from stableops.refunds import AsyncRefundsApi, RefundsApi
 from stableops.webhooks import AsyncWebhooksApi, WebhooksApi
 
 
@@ -20,6 +22,7 @@ class StableOps:
     """StableOps synchronous client.
 
     Example:
+        >>> from datetime import datetime, timedelta, timezone
         >>> from stableops import StableOps
         >>> client = StableOps(
         ...     api_key="your_api_key",
@@ -28,7 +31,7 @@ class StableOps:
         ...     merchant_order_id="order_123",
         ...     amount="10.00",
         ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
-        ...     expires_at="2026-06-20T12:30:00Z",
+        ...     expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
         ... )
     """
 
@@ -70,6 +73,8 @@ class StableOps:
         self.agents = AgentsApi(self._http)
         self.merchant_subscriptions = MerchantSubscriptionsApi(self._http)
         self.payment_orders = PaymentOrdersApi(self._http)
+        self.payment_links = PaymentLinksApi(self._http)
+        self.refunds = RefundsApi(self._http)
         self.checkout_sessions = CheckoutSessionsApi(self._http, checkout_base_url)
         self.webhooks = WebhooksApi(self._http)
 
@@ -108,6 +113,7 @@ class AsyncStableOps:
 
     Example:
         >>> import asyncio
+        >>> from datetime import datetime, timedelta, timezone
         >>> from stableops import AsyncStableOps
         >>> async def main():
         ...     client = AsyncStableOps(api_key="your_api_key")
@@ -115,7 +121,7 @@ class AsyncStableOps:
         ...         merchant_order_id="order_123",
         ...         amount="10.00",
         ...         accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
-        ...         expires_at="2026-06-20T12:30:00Z",
+        ...         expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
         ...     )
         ...     print(f"Order created: {order.id}")
         >>> asyncio.run(main())
@@ -157,6 +163,8 @@ class AsyncStableOps:
         self.agents = AsyncAgentsApi(self._http)
         self.merchant_subscriptions = AsyncMerchantSubscriptionsApi(self._http)
         self.payment_orders = AsyncPaymentOrdersApi(self._http)
+        self.payment_links = AsyncPaymentLinksApi(self._http)
+        self.refunds = AsyncRefundsApi(self._http)
         self.checkout_sessions = AsyncCheckoutSessionsApi(self._http, checkout_base_url)
         self.webhooks = AsyncWebhooksApi(self._http)
 

@@ -3,13 +3,14 @@
 Official Python SDK for StableOps - Stablecoin payment infrastructure.
 
 Example:
+    >>> from datetime import datetime, timedelta, timezone
     >>> from stableops import StableOps
     >>> client = StableOps(api_key="your_api_key")
     >>> order = client.payment_orders.create(
     ...     merchant_order_id="order_123",
     ...     amount="10.00",
     ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
-    ...     expires_at="2026-06-20T12:30:00Z",
+    ...     expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
     ... )
 """
 
@@ -31,6 +32,7 @@ from stableops.types import (
     CreateEndUserSubscriptionInput,
     CreateInvoiceCheckoutSessionInput,
     CreateMerchantPlanInput,
+    CreatePaymentLinkInput,
     CreatePaymentOrderInput,
     CreatePortalSessionInput,
     CreateWebhookEndpointInput,
@@ -46,6 +48,14 @@ from stableops.types import (
     MerchantPlanInterval,
     MerchantSubscriptionChangePlanResult,
     MerchantSubscriptionCreateResult,
+    PaymentLink,
+    PaymentLinkList,
+    PaymentLinkOrder,
+    PaymentLinkOrdersPage,
+    PaymentLinkPayer,
+    PaymentLinkPayerField,
+    PaymentLinkPayment,
+    PaymentLinkStatus,
     PaymentOrder,
     PaymentOrderDetail,
     PaymentOrderInstruction,
@@ -54,12 +64,16 @@ from stableops.types import (
     PaymentOrderTimelineEntry,
     PayMerchantInvoiceResponse,
     PortalSession,
+    Refund,
+    RefundList,
+    RefundStatus,
     ReplayDeadLetterItem,
     ReplayDeadLettersResult,
     ReplayDeliveryResult,
     RequestAgentActionResult,
     UpdateMerchantBillingSettingsInput,
     UpdateMerchantPlanInput,
+    UpdatePaymentLinkInput,
     UpdateWebhookEndpointInput,
     WebhookDelivery,
     WebhookDeliveryList,
@@ -85,6 +99,19 @@ __all__ = [
     # Errors
     "StableOpsError",
     # Types
+    "CreatePaymentLinkInput",
+    "UpdatePaymentLinkInput",
+    "Refund",
+    "RefundList",
+    "RefundStatus",
+    "PaymentLink",
+    "PaymentLinkList",
+    "PaymentLinkOrder",
+    "PaymentLinkOrdersPage",
+    "PaymentLinkPayer",
+    "PaymentLinkPayerField",
+    "PaymentLinkPayment",
+    "PaymentLinkStatus",
     "AcceptedAssetInput",
     "AgentAction",
     "AgentActionList",

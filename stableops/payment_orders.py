@@ -112,7 +112,7 @@ class PaymentOrdersApi:
             ...     merchant_order_id="order_123",
             ...     amount="10.00",
             ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
-            ...     expires_at="2026-06-20T12:30:00Z",
+            ...     expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
             ... )
         """
         body = _to_create_body(

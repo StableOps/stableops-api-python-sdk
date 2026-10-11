@@ -5,6 +5,7 @@ from urllib.parse import quote
 
 from stableops.http import AsyncHttpClient, HttpClient
 from stableops.payment_orders import _from_wire as _order_from_wire
+from stableops.payment_orders import _normalize_iso_datetime
 from stableops.types import AmountMode, CheckoutSession
 
 DEFAULT_CHECKOUT_BASE_URL = "https://pay.stableops.dev"
@@ -28,7 +29,7 @@ def _to_create_body(
         "merchant_order_id": merchant_order_id,
         "amount": amount,
         "accepted_assets": accepted_assets,
-        "expires_at": expires_at,
+        "expires_at": _normalize_iso_datetime(expires_at),
     }
     if amount_mode is not None:
         body["amount_mode"] = amount_mode
@@ -103,15 +104,24 @@ class CheckoutSessionsApi:
             ...     merchant_order_id="order_123",
             ...     amount="10.00",
             ...     accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
-            ...     expires_at="2026-06-20T12:30:00Z",
+            ...     expires_at=(datetime.now(timezone.utc) + timedelta(minutes=25)).isoformat(),
             ...     title="Pro plan",
             ...     success_url="https://shop.example/success",
             ... )
             >>> print(session.url)
         """
         body = _to_create_body(
-            merchant_order_id, amount, accepted_assets, expires_at, amount_mode, metadata,
-            title, description, success_url, cancel_url, walletconnect_project_id,
+            merchant_order_id,
+            amount,
+            accepted_assets,
+            expires_at,
+            amount_mode,
+            metadata,
+            title,
+            description,
+            success_url,
+            cancel_url,
+            walletconnect_project_id,
         )
         response = self.http.request(
             method="POST",
@@ -147,8 +157,17 @@ class AsyncCheckoutSessionsApi:
     ) -> CheckoutSession:
         """Create a hosted checkout session (async)."""
         body = _to_create_body(
-            merchant_order_id, amount, accepted_assets, expires_at, amount_mode, metadata,
-            title, description, success_url, cancel_url, walletconnect_project_id,
+            merchant_order_id,
+            amount,
+            accepted_assets,
+            expires_at,
+            amount_mode,
+            metadata,
+            title,
+            description,
+            success_url,
+            cancel_url,
+            walletconnect_project_id,
         )
         response = await self.http.request(
             method="POST",

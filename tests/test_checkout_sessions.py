@@ -2,6 +2,11 @@
 
 from typing import Any, Dict
 
+import httpx
+import pytest
+import respx
+
+from stableops import AsyncStableOps, StableOps
 from stableops.checkout_sessions import CheckoutSessionsApi
 
 
@@ -28,7 +33,9 @@ def _wire_session(**overrides: Any) -> Dict[str, Any]:
             "metadata": None,
             "created_at": "2026-06-01T00:00:00.000Z",
             "accepted_assets": [{"chain": "base-sepolia", "asset": "USDC"}],
-            "payment_instructions": [{"chain": "base-sepolia", "asset": "USDC", "address": "0xabc"}],
+            "payment_instructions": [
+                {"chain": "base-sepolia", "asset": "USDC", "address": "0xabc"}
+            ],
         },
     }
     wire.update(overrides)
@@ -93,3 +100,32 @@ def test_url_is_none_without_client_secret() -> None:
     )
 
     assert session.url is None
+
+
+@pytest.mark.parametrize("asynchronous", [False, True])
+async def test_create_normalizes_python_utc_datetime(asynchronous: bool) -> None:
+    """datetime.isoformat() 的 UTC 偏移转换为 API 接受的 Z 后缀。"""
+    import json
+
+    def handle(request: httpx.Request) -> httpx.Response:
+        assert json.loads(request.content)["expires_at"] == "2026-10-11T00:25:00Z"
+        return httpx.Response(201, json=_wire_session())
+
+    with respx.mock as mock:
+        mock.post("https://api.test.local/v1/checkout-sessions").mock(side_effect=handle)
+        if asynchronous:
+            async with AsyncStableOps(base_url="https://api.test.local") as client:
+                await client.checkout_sessions.create(
+                    merchant_order_id="m_1",
+                    amount="10.00",
+                    accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
+                    expires_at="2026-10-11T00:25:00+00:00",
+                )
+        else:
+            with StableOps(base_url="https://api.test.local") as sync_client:
+                sync_client.checkout_sessions.create(
+                    merchant_order_id="m_1",
+                    amount="10.00",
+                    accepted_assets=[{"chain": "base-sepolia", "asset": "USDC"}],
+                    expires_at="2026-10-11T00:25:00+00:00",
+                )

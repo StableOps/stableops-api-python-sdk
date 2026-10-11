@@ -70,6 +70,6 @@ pip install stableops
 
 ## Documentation
 
-- [API Documentation](https://docs.stableops.dev)
-- [Integration Guides](https://docs.stableops.dev/guides)
-- [Python SDK Reference](https://docs.stableops.dev/sdk/python)
+- [API Documentation](https://stableops.dev/en/docs)
+- [Integration Guides](https://stableops.dev/en/docs/quickstart)
+- [Python SDK Reference](https://stableops.dev/en/docs/sdk/python-api-sdk)

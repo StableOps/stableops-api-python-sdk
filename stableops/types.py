@@ -6,11 +6,23 @@ from pydantic import BaseModel, ConfigDict, Field
 
 # Type aliases
 ChainId = Literal[
-    "ethereum", "base", "base-sepolia", "arbitrum", "polygon",
-    "optimism", "bsc", "tron", "solana",
+    "ethereum",
+    "base",
+    "base-sepolia",
+    "arbitrum",
+    "polygon",
+    "optimism",
+    "bsc",
+    "tron",
+    "solana",
     # 测试网（playground 用）
-    "ethereum-sepolia", "arbitrum-sepolia", "polygon-amoy",
-    "optimism-sepolia", "bsc-testnet", "solana-devnet", "tron-nile",
+    "ethereum-sepolia",
+    "arbitrum-sepolia",
+    "polygon-amoy",
+    "optimism-sepolia",
+    "bsc-testnet",
+    "solana-devnet",
+    "tron-nile",
 ]
 Asset = Literal["USDC", "USDT"]
 # 'auto' 让服务端把金额微调到唯一（SHARED 地址免手动错开金额）；省略即默认 'exact'。
@@ -27,11 +39,40 @@ WebhookEventType = Literal[
     "payment.reverted",
     "payment.expired",
     "payment_order.canceled",
+    "refund.requested",
+    "refund.submitted",
+    "refund.confirmed",
+    "refund.failed",
     "address.pool.low",
     "webhook.delivery.failed",
     "agent.action.requested",
     "agent.action.approved",
     "agent.action.executed",
+    "agent_payment.intent.created",
+    "agent_payment.intent.awaiting_approval",
+    "agent_payment.approval.approved",
+    "agent_payment.approval.rejected",
+    "agent_payment.approval.expired",
+    "agent_payment.authorization.issued",
+    "agent_payment.authorization.expired",
+    "agent_payment.settlement.unknown",
+    "agent_payment.settlement.settled",
+    "agent_payment.settlement.reverted",
+    "agent_payment.resource.succeeded",
+    "agent_payment.resource.failed",
+    "agent_payment.resource.unknown",
+    "agent_payment.agent.paused",
+    "agent_payment.organization.paused",
+    "end_user_subscription.created",
+    "end_user_subscription.activated",
+    "end_user_subscription.renewed",
+    "end_user_subscription.canceled",
+    "end_user_subscription.expired",
+    "end_user_subscription.past_due",
+    "end_user_invoice.open",
+    "end_user_invoice.paid",
+    "end_user_invoice.payment_failed",
+    "end_user_invoice.payment_late",
 ]
 WebhookDeliveryStatus = Literal["pending", "succeeded", "failed", "dead_letter"]
 MerchantPlanInterval = Literal["month", "year", "week", "custom_days"]
@@ -40,6 +81,9 @@ EndUserSubscriptionStatus = Literal[
 ]
 EndUserInvoiceStatus = Literal["open", "paid", "void", "uncollectible"]
 EndUserInvoiceKind = Literal["first", "renewal", "upgrade_proration"]
+RefundStatus = Literal["requested", "submitted", "confirmed", "failed", "canceled"]
+PaymentLinkStatus = Literal["active", "inactive"]
+PaymentLinkPayerField = Literal["name", "email", "reference", "note"]
 
 
 class AcceptedAssetInput(BaseModel):
@@ -504,3 +548,131 @@ class MerchantInvoiceCheckoutSession(BaseModel):
     client_secret: str
     checkout_url: str
     payment_order: PaymentOrder
+
+
+class Refund(BaseModel):
+    """Non-custodial refund record."""
+
+    id: str
+    payment_order_id: str
+    source_payment_event_id: str
+    chain: ChainId
+    asset: Asset
+    amount: str
+    amount_minor: str
+    source_address: str
+    destination_address: str
+    status: RefundStatus
+    tx_hash: Optional[str]
+    failure_reason: Optional[str]
+    submitted_at: Optional[str]
+    confirmed_at: Optional[str]
+    canceled_at: Optional[str]
+    created_at: str
+    updated_at: str
+
+
+class RefundList(BaseModel):
+    """Paginated refund response."""
+
+    items: List[Refund]
+    has_more: bool
+    total: int
+
+
+class PaymentLinkPayer(BaseModel):
+    """Payer details collected by a payment link."""
+
+    name: Optional[str] = None
+    email: Optional[str] = None
+    reference: Optional[str] = None
+    note: Optional[str] = None
+
+
+class CreatePaymentLinkInput(BaseModel):
+    """Input for creating a reusable payment link."""
+
+    title: str
+    amount: str
+    accepted_assets: List[AcceptedAssetInput]
+    description: Optional[str] = None
+    amount_mode: Optional[AmountMode] = None
+    settlement_asset: Optional[Asset] = None
+    success_url: Optional[str] = None
+    cancel_url: Optional[str] = None
+    walletconnect_project_id: Optional[str] = None
+    expires_in_minutes: Optional[int] = None
+    payer_fields: Optional[List[PaymentLinkPayerField]] = None
+
+
+class UpdatePaymentLinkInput(BaseModel):
+    """Only explicitly provided fields are sent, including nullable values."""
+
+    title: Optional[str] = None
+    description: Optional[str] = None
+    status: Optional[PaymentLinkStatus] = None
+    success_url: Optional[str] = None
+    cancel_url: Optional[str] = None
+    expires_in_minutes: Optional[int] = None
+    payer_fields: Optional[List[PaymentLinkPayerField]] = None
+
+
+class PaymentLink(BaseModel):
+    """Reusable payment link configuration."""
+
+    id: str
+    slug: str
+    title: str
+    description: Optional[str]
+    amount: str
+    amount_mode: AmountMode
+    settlement_asset: Optional[Asset]
+    accepted_assets: List[AcceptedAssetInput]
+    success_url: Optional[str]
+    cancel_url: Optional[str]
+    walletconnect_project_id: Optional[str]
+    expires_in_minutes: int
+    payer_fields: Optional[List[PaymentLinkPayerField]] = None
+    status: PaymentLinkStatus
+    checkout_count: int
+    created_at: str
+    updated_at: str
+
+
+class PaymentLinkList(BaseModel):
+    """Paginated payment link response."""
+
+    items: List[PaymentLink]
+    has_more: bool
+    total: int
+
+
+class PaymentLinkPayment(BaseModel):
+    """On-chain payment associated with a payment link order."""
+
+    chain: str
+    asset: Asset
+    amount: str
+    tx_hash: str
+
+
+class PaymentLinkOrder(BaseModel):
+    """Payment order and payer details for a payment link."""
+
+    id: str
+    merchant_order_id: str
+    amount: str
+    status: PaymentOrderStatus
+    created_at: str
+    payer: Optional[PaymentLinkPayer]
+    payments: List[PaymentLinkPayment]
+
+
+class PaymentLinkOrdersPage(BaseModel):
+    """Paginated orders with the link and completed-order count."""
+
+    link: PaymentLink
+    items: List[PaymentLinkOrder]
+    has_more: bool
+    total: int
+    completed: int
