@@ -245,6 +245,8 @@ class WebhookDelivery(BaseModel):
     """Webhook delivery record."""
 
     id: str
+    # 直接来源投递。首次投递和历史无关联记录为空。
+    replay_of_delivery_id: Optional[str] = None
     webhook_endpoint_id: str
     event_id: str
     event_type: WebhookEventType

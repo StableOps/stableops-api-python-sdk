@@ -166,6 +166,7 @@ def test_list_deliveries_filters_and_parses() -> None:
             "items": [
                 {
                     "id": "wd_1",
+                    "replay_of_delivery_id": "wd_original",
                     "webhook_endpoint_id": "we_1",
                     "event_id": "evt_1",
                     "event_type": "payment.finalized",
@@ -189,7 +190,13 @@ def test_list_deliveries_filters_and_parses() -> None:
     )
     api = WebhooksApi(http)  # type: ignore[arg-type]
 
-    deliveries = api.list_deliveries(status="failed", endpoint_id="we_1", limit=20)
+    deliveries = api.list_deliveries(
+        status="failed",
+        endpoint_id="we_1",
+        limit=20,
+        delivery_id="wd_1",
+        replay_of_delivery_id="wd_original",
+    )
 
     assert http.last_request["query"] == {
         "status": "failed",
@@ -197,7 +204,10 @@ def test_list_deliveries_filters_and_parses() -> None:
         "payment_order_id": None,
         "limit": 20,
         "offset": None,
+        "delivery_id": "wd_1",
+        "replay_of_delivery_id": "wd_original",
     }
+    assert deliveries[0].replay_of_delivery_id == "wd_original"
     assert deliveries[0].attempts == 3
     assert deliveries[0].payload == {"type": "payment.finalized"}
 

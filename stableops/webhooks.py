@@ -242,6 +242,8 @@ class WebhooksApi:
         payment_order_id: Optional[str] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        delivery_id: Optional[str] = None,
+        replay_of_delivery_id: Optional[str] = None,
     ) -> List[WebhookDelivery]:
         """List webhook deliveries."""
         return self.list_deliveries_page(
@@ -250,6 +252,8 @@ class WebhooksApi:
             payment_order_id=payment_order_id,
             limit=limit,
             offset=offset,
+            delivery_id=delivery_id,
+            replay_of_delivery_id=replay_of_delivery_id,
         ).items
 
     def list_deliveries_page(
@@ -259,6 +263,8 @@ class WebhooksApi:
         payment_order_id: Optional[str] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        delivery_id: Optional[str] = None,
+        replay_of_delivery_id: Optional[str] = None,
     ) -> WebhookDeliveryList:
         """List webhook deliveries with pagination metadata."""
         response = self.http.request(
@@ -270,6 +276,8 @@ class WebhooksApi:
                 "payment_order_id": payment_order_id,
                 "limit": limit,
                 "offset": offset,
+                "delivery_id": delivery_id,
+                "replay_of_delivery_id": replay_of_delivery_id,
             },
         )
         return WebhookDeliveryList(**response)
@@ -407,6 +415,8 @@ class AsyncWebhooksApi:
         payment_order_id: Optional[str] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        delivery_id: Optional[str] = None,
+        replay_of_delivery_id: Optional[str] = None,
     ) -> List[WebhookDelivery]:
         """List webhook deliveries (async)."""
         page = await self.list_deliveries_page(
@@ -415,6 +425,8 @@ class AsyncWebhooksApi:
             payment_order_id=payment_order_id,
             limit=limit,
             offset=offset,
+            delivery_id=delivery_id,
+            replay_of_delivery_id=replay_of_delivery_id,
         )
         return page.items
 
@@ -425,6 +437,8 @@ class AsyncWebhooksApi:
         payment_order_id: Optional[str] = None,
         limit: Optional[int] = None,
         offset: Optional[int] = None,
+        delivery_id: Optional[str] = None,
+        replay_of_delivery_id: Optional[str] = None,
     ) -> WebhookDeliveryList:
         """List webhook deliveries with pagination metadata (async)."""
         response = await self.http.request(
@@ -436,6 +450,8 @@ class AsyncWebhooksApi:
                 "payment_order_id": payment_order_id,
                 "limit": limit,
                 "offset": offset,
+                "delivery_id": delivery_id,
+                "replay_of_delivery_id": replay_of_delivery_id,
             },
         )
         return WebhookDeliveryList(**response)
