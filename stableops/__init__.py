@@ -90,7 +90,7 @@ from stableops.webhooks import (
     verify_webhook_signature,
 )
 
-__version__ = "1.1.0"
+__version__ = "1.1.1"
 
 __all__ = [
     # Client
